@@ -666,6 +666,29 @@ textarea{resize:vertical;min-height:70px;}
   <span id="undo-msg">Marked as absent</span>
   <button onclick="undoLastMark()" style="background:var(--amber);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;">↩ Undo</button>
 </div>
+<!-- MODAL: STUDENT PROFILE -->
+<div class="modal-overlay" id="modal-profile" style="align-items:flex-start;overflow-y:auto;padding:20px 0;">
+  <div class="modal" style="max-width:480px;width:92%;margin:auto;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div>
+        <h3 id="profile-name" style="font-size:15px;color:var(--green-dark);"></h3>
+        <div id="profile-meta" style="font-size:12px;color:var(--text-muted);margin-top:2px;"></div>
+      </div>
+      <button class="btn btn-outline" style="padding:5px 10px;" onclick="closeModal('modal-profile')">✕</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px;" id="profile-stats"></div>
+    <select id="profile-month-filter" onchange="renderProfileRecords()" style="width:100%;margin-bottom:10px;padding:7px;border:1.5px solid var(--gray-border);border-radius:8px;font-size:13px;">
+      <option value="">All Months</option>
+    </select>
+    <div style="overflow-x:auto;max-height:380px;overflow-y:auto;">
+      <table class="log-table" style="width:100%;">
+        <thead><tr><th>Date</th><th>Day</th><th>Status</th><th>Time</th></tr></thead>
+        <tbody id="profile-records"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -2285,8 +2308,8 @@ function renderMonthlyOverview() {
     const pct      = total > 0 ? Math.round((r.present + r.late) / total * 100) : 0;
     const pctColor = pct >= 90 ? 'var(--green)' : pct >= 75 ? 'var(--amber-dark)' : 'var(--red)';
     const lateWarn = r.late >= 3 ? `<span style="color:var(--red);font-size:10px;"> ⚠</span>` : '';
-    return `<tr>
-      <td style="font-weight:600;font-size:12px;">${r.name}</td>
+    return `<tr style="cursor:pointer;" onclick="showStudentProfile('${esc(r.name)}','${esc(r.section)}')" title="Click to view full record">
+      <td style="font-weight:600;font-size:12px;color:var(--blue);text-decoration:underline;">${r.name}</td>
       <td><span class="pill" style="background:var(--green-light);color:var(--green-dark);font-size:10px;">${r.section}</span></td>
       <td style="color:var(--green);font-weight:600;text-align:center;">${r.present}</td>
       <td style="color:var(--amber-dark);font-weight:600;text-align:center;">${r.late}${lateWarn}</td>
@@ -2502,7 +2525,111 @@ function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t
 function esc(s){return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
 
 document.getElementById('modal-status').addEventListener('click',function(e){if(e.target===this)closeModal('modal-status');});
-document.getElementById('modal-edit').addEventListener('click',function(e){if(e.target===this)closeModal('modal-edit');});
+// ══ STUDENT PROFILE ══
+let profileStudent = null;
+let profileSection = null;
+
+function showStudentProfile(name, section) {
+  profileStudent = name;
+  profileSection = section;
+
+  const s = students.find(x => x.name === name && x.section === section);
+  document.getElementById('profile-name').textContent = name;
+  document.getElementById('profile-meta').textContent =
+    '📚 ' + section + (s ? '  👤 ' + (s.parent||'—') + '  📱 ' + (s.phone||'—') : '');
+
+  // Build month filter options from this student's records
+  const studentLog = log.filter(r => r.name === name && r.section === section);
+  const months = new Set();
+  studentLog.forEach(r => {
+    const parts = r.date.split('/');
+    if (parts.length >= 3) months.add(parts[2]+'-'+parts[0].padStart(2,'0'));
+  });
+  const sel = document.getElementById('profile-month-filter');
+  sel.innerHTML = '<option value="">All Months</option>' +
+    [...months].sort().reverse().map(m => {
+      const [yr,mo] = m.split('-');
+      return `<option value="${m}">${MONTH_NAMES[parseInt(mo)-1]} ${yr}</option>`;
+    }).join('');
+
+  renderProfileRecords();
+  document.getElementById('modal-profile').classList.add('open');
+}
+
+function renderProfileRecords() {
+  const name    = profileStudent;
+  const section = profileSection;
+  const monthF  = document.getElementById('profile-month-filter').value;
+
+  // Get all records for this student — deduped by latest per date
+  const allRecs = log.filter(r => r.name === name && r.section === section);
+  const latestMap = {};
+  allRecs.forEach(r => { latestMap[r.date] = r; });
+  let records = Object.values(latestMap).sort((a,b) => {
+    // Sort by date descending
+    const da = new Date(a.date.split('/')[2]+'-'+a.date.split('/')[0].padStart(2,'0')+'-'+a.date.split('/')[1].padStart(2,'0'));
+    const db = new Date(b.date.split('/')[2]+'-'+b.date.split('/')[0].padStart(2,'0')+'-'+b.date.split('/')[1].padStart(2,'0'));
+    return db - da;
+  });
+
+  // Apply month filter
+  if (monthF) {
+    const [yr,mo] = monthF.split('-');
+    records = records.filter(r => {
+      const parts = r.date.split('/');
+      return parts.length >= 3 && parseInt(parts[0])===parseInt(mo) && parseInt(parts[2])===parseInt(yr);
+    });
+  }
+
+  // Summary stats
+  const present = records.filter(r=>r.status==='present').length;
+  const late    = records.filter(r=>r.status==='late').length;
+  const absent  = records.filter(r=>r.status==='absent').length;
+  const total   = records.length;
+  const pct     = total > 0 ? Math.round((present+late)/total*100) : 0;
+  const pctColor= pct>=90?'var(--green)':pct>=75?'var(--amber-dark)':'var(--red)';
+
+  document.getElementById('profile-stats').innerHTML = `
+    <div style="background:var(--green-light);border-radius:8px;padding:8px;text-align:center;">
+      <div style="font-size:18px;font-weight:700;color:var(--green);">${present}</div>
+      <div style="font-size:10px;color:var(--green-dark);">Present</div>
+    </div>
+    <div style="background:var(--amber-light);border-radius:8px;padding:8px;text-align:center;">
+      <div style="font-size:18px;font-weight:700;color:var(--amber-dark);">${late}</div>
+      <div style="font-size:10px;color:var(--amber-dark);">Late</div>
+    </div>
+    <div style="background:var(--red-light);border-radius:8px;padding:8px;text-align:center;">
+      <div style="font-size:18px;font-weight:700;color:var(--red);">${absent}</div>
+      <div style="font-size:10px;color:var(--red);">Absent</div>
+    </div>
+    <div style="background:var(--gray-light);border-radius:8px;padding:8px;text-align:center;">
+      <div style="font-size:18px;font-weight:700;color:${pctColor};">${pct}%</div>
+      <div style="font-size:10px;color:var(--text-muted);">Attendance</div>
+    </div>`;
+
+  const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const sc = {present:'#E1F5EE',late:'#FAEEDA',absent:'#FCEBEB'};
+  const tc = {present:'#085041',late:'#633806',absent:'#A32D2D'};
+  const icons = {present:'✔',late:'⏰',absent:'✘'};
+
+  const tbody = document.getElementById('profile-records');
+  if (!records.length) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:20px;">No records found.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = records.map(r => {
+    const parts = r.date.split('/');
+    const dayName = parts.length>=3 ? DAYS[new Date(parts[2]+'-'+parts[0].padStart(2,'0')+'-'+parts[1].padStart(2,'0')).getDay()] : '—';
+    return `<tr>
+      <td style="font-size:12px;font-weight:600;">${r.date}</td>
+      <td style="font-size:12px;color:var(--text-muted);">${dayName}</td>
+      <td><span class="pill" style="background:${sc[r.status]};color:${tc[r.status]};">${icons[r.status]} ${r.status}</span></td>
+      <td style="font-size:12px;color:var(--text-muted);">${r.time||'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+document.getElementById('modal-profile').addEventListener('click',function(e){if(e.target===this)closeModal('modal-profile');});
 
 try { init(); } catch(e) { console.error('Init error:', e); document.body.innerHTML += '<div style="position:fixed;bottom:0;left:0;right:0;background:#A32D2D;color:#fff;padding:12px;font-size:12px;z-index:9999;">⚠ App error: '+e.message+'. Please refresh the page.</div>'; }
 </script>
