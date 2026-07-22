@@ -145,6 +145,13 @@ textarea{resize:vertical;min-height:70px;}
 </head>
 <body>
 
+<!-- UPDATE BANNER -->
+<div id="update-banner" style="display:none;background:var(--blue);color:#fff;padding:10px 16px;text-align:center;font-size:13px;font-weight:500;position:relative;z-index:50;">
+  <span id="update-banner-text">🆕 New version available!</span>
+  <button onclick="installUpdate()" style="margin-left:12px;background:#fff;color:var(--blue);border:none;border-radius:6px;padding:5px 14px;font-size:12px;font-weight:700;cursor:pointer;">⬇ Install Update</button>
+  <button onclick="dismissUpdate()" style="margin-left:8px;background:transparent;color:rgba(255,255,255,.7);border:none;font-size:16px;cursor:pointer;padding:0 4px;">✕</button>
+</div>
+
 <!-- HEADER -->
 <div class="header">
   <div class="header-icon">📋</div>
@@ -294,6 +301,39 @@ textarea{resize:vertical;min-height:70px;}
     <p style="font-size:11px;color:var(--blue);margin-bottom:8px;">Sent ONCE per section to the adviser — a summary, not one per student. Variables: {class} {section} {schedule} {date} {time} {present} {late} {absent} {absentnames} {latenames}</p>
     <textarea id="msg-template-adviser" rows="4" oninput="saveTemplates()">Good day po! This is Ma'am Garcia. In Math 10 {section} today, {date} {time}: {present} Present, {absent} Absent, {late} Late.{absentnames}{latenames} Thank you po!</textarea>
     <p style="font-size:11px;color:var(--blue);margin-top:6px;">💡 {absentnames} and {latenames} auto-show only if there are any absences/lates. Leave them in the template.</p>
+  </div>
+
+  <!-- Emergency Broadcast -->
+  <div class="card" style="border-color:#A32D2D;background:var(--red-light);">
+    <div class="card-title" style="color:var(--red);">🚨 Emergency Broadcast</div>
+    <p style="font-size:11px;color:var(--red);margin-bottom:10px;">Send one message to ALL parents instantly — for early dismissal, class suspension, or urgent announcements.</p>
+
+    <!-- Quick templates -->
+    <div style="font-size:11px;font-weight:600;color:var(--red);margin-bottom:6px;">Quick templates:</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+      <button class="btn" style="background:#fff;color:var(--red);border:1.5px solid #F09595;font-size:11px;padding:5px 10px;" onclick="setEmergencyTemplate('early')">🕐 Early Dismissal</button>
+      <button class="btn" style="background:#fff;color:var(--red);border:1.5px solid #F09595;font-size:11px;padding:5px 10px;" onclick="setEmergencyTemplate('suspension')">🚫 Class Suspension</button>
+      <button class="btn" style="background:#fff;color:var(--red);border:1.5px solid #F09595;font-size:11px;padding:5px 10px;" onclick="setEmergencyTemplate('earthquake')">🌍 Earthquake</button>
+      <button class="btn" style="background:#fff;color:var(--red);border:1.5px solid #F09595;font-size:11px;padding:5px 10px;" onclick="setEmergencyTemplate('flood')">🌊 Flood/Weather</button>
+    </div>
+
+    <!-- Message box -->
+    <label style="color:var(--red);">Your announcement message:</label>
+    <textarea id="emergency-msg" rows="4" oninput="saveTemplates()" style="border-color:#F09595;margin-bottom:10px;" placeholder="Type your emergency message here...">Good day po! This is Ma'am Garcia, Math 10 Teacher. Please be informed that classes are suspended today due to unavoidable circumstances. Please fetch your child immediately. Stay safe po!</textarea>
+
+    <!-- Section selector -->
+    <label style="color:var(--red);">Send to which sections:</label>
+    <div id="emergency-section-checkboxes" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;margin-top:6px;"></div>
+
+    <!-- Recipient count -->
+    <div id="emergency-count" style="font-size:12px;color:var(--red);margin-bottom:10px;font-weight:600;"></div>
+
+    <!-- Send buttons -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <button class="btn" style="background:var(--red);color:#fff;justify-content:center;font-size:13px;" onclick="sendEmergencySemaphore()">📡 Send ALL via Semaphore</button>
+      <button class="btn" style="background:#c0392b;color:#fff;justify-content:center;font-size:13px;" onclick="sendEmergencyPrepaid()">📱 Send ALL via Prepaid</button>
+    </div>
+    <p style="font-size:11px;color:var(--red);margin-top:8px;">📡 Semaphore = fully automatic, sends in background.<br>📱 Prepaid = opens SMS app per parent, tap Send each time.</p>
   </div>
 
   <!-- Action buttons -->
@@ -476,6 +516,20 @@ textarea{resize:vertical;min-height:70px;}
     <label style="color:var(--amber-dark);margin-top:10px;">Your phone number (for test SMS)</label>
     <input type="tel" id="setup-testphone" placeholder="e.g. 09171234567"/>
     <div class="btn-row"><button class="btn btn-green" onclick="testSemaphore()">🧪 Send Test SMS</button></div>
+  </div>
+
+  <div class="card" style="border-color:#85B7EB;background:var(--blue-light);">
+    <div class="card-title" style="color:var(--blue);">🔄 App Version</div>
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px;">
+      <div style="font-size:28px;font-weight:800;color:var(--blue);" id="current-version-display">v1.1.0</div>
+      <div id="version-status-badge" style="font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;background:var(--green-light);color:var(--green-dark);">✔ Up to date</div>
+    </div>
+    <div id="update-card-info" style="font-size:12px;color:var(--blue);margin-bottom:10px;display:none;"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-blue" onclick="checkForUpdates(true)">🔍 Check for Updates</button>
+      <button id="install-update-btn" class="btn btn-green" onclick="installUpdate()" style="display:none;">⬇ Install Update</button>
+    </div>
+    <p style="font-size:11px;color:var(--blue);margin-top:8px;line-height:1.6;">Your data (students, attendance, logs) is <strong>never affected</strong> by updates — only the app code is refreshed.</p>
   </div>
 
   <div class="card" style="border-color:#F09595;background:var(--red-light);">
@@ -695,6 +749,8 @@ textarea{resize:vertical;min-height:70px;}
 // ══════════════════════════════════════
 // DEFAULT SECTION NAMES
 // ══════════════════════════════════════
+const APP_VERSION     = '1.1.0';
+const UPDATE_CHECK_URL = 'https://cristinagarcia1227.github.io/attendance/version.json';
 const DEFAULT_SECTIONS = ['Section 1'];
 
 // ══════════════════════════════════════
@@ -730,6 +786,8 @@ function init() {
   setInterval(updateClock, 1000);
   setTimeout(regenerateQR, 400);
   initWelcome();
+  // Check for updates silently after 3 seconds
+  setTimeout(() => checkForUpdates(false), 3000);
 }
 
 function loadStorage() {
@@ -1128,7 +1186,7 @@ function switchTab(name) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.getElementById('panel-'+name).classList.add('active');
   if (name==='log')      renderLog();
-  if (name==='messages') generateMessages();
+  if (name==='messages') { generateMessages(); buildEmergencySectionCheckboxes(); }
   if (name==='overview') { renderOverview(); buildMonthlyDropdown(); renderMonthlyOverview(); }
 }
 
@@ -2020,6 +2078,210 @@ function clearAllData() {
   toast('✔ App reset to fresh start!');
 }
 
+// ══ AUTO-UPDATE ══
+let latestVersion = null;
+let latestUrl     = null;
+
+function compareVersions(a, b) {
+  const pa = a.replace('v','').split('.').map(Number);
+  const pb = b.replace('v','').split('.').map(Number);
+  for (let i=0; i<3; i++) {
+    if ((pa[i]||0) > (pb[i]||0)) return 1;
+    if ((pa[i]||0) < (pb[i]||0)) return -1;
+  }
+  return 0;
+}
+
+async function checkForUpdates(manual=false) {
+  try {
+    const res  = await fetch(UPDATE_CHECK_URL + '?t=' + Date.now());
+    const data = await res.json();
+    latestVersion = data.version;
+    latestUrl     = data.url;
+
+    const hasUpdate = compareVersions(latestVersion, APP_VERSION) > 0;
+
+    // Update version card in Setup
+    const badge   = document.getElementById('version-status-badge');
+    const info    = document.getElementById('update-card-info');
+    const btn     = document.getElementById('install-update-btn');
+
+    if (hasUpdate) {
+      // Show banner
+      const banner = document.getElementById('update-banner');
+      const bannerText = document.getElementById('update-banner-text');
+      if (banner) {
+        bannerText.textContent = '🆕 New version ' + latestVersion + ' available! (You have ' + APP_VERSION + ')';
+        banner.style.display = 'block';
+      }
+      // Update Setup card
+      if (badge) { badge.textContent = '🆕 Update available!'; badge.style.background='var(--blue)'; badge.style.color='#fff'; }
+      if (info)  { info.textContent = 'New version '+latestVersion+' is available. Your current version is '+APP_VERSION+'. Tap Install Update to upgrade — your data will not be affected.'; info.style.display='block'; }
+      if (btn)   { btn.style.display='inline-flex'; }
+      if (manual) toast('🆕 Update available: ' + latestVersion);
+    } else {
+      if (badge) { badge.textContent = '✔ Up to date'; badge.style.background='var(--green-light)'; badge.style.color='var(--green-dark)'; }
+      if (info)  { info.style.display='none'; }
+      if (btn)   { btn.style.display='none'; }
+      if (manual) toast('✔ You have the latest version (' + APP_VERSION + ')');
+    }
+  } catch(e) {
+    if (manual) toast('Could not check for updates — make sure you have internet.');
+  }
+}
+
+async function installUpdate() {
+  if (!latestUrl) {
+    toast('No update URL found. Try checking for updates first.');
+    return;
+  }
+  if (!confirm(
+    '⬇ Install Update ' + latestVersion + '?\n\n' +
+    '✅ Your students, attendance, and logs will NOT be deleted.\n' +
+    '✅ Your settings and message templates are kept.\n\n' +
+    'The page will refresh after installing.\n\nTap OK to proceed.'
+  )) return;
+
+  try {
+    toast('⬇ Downloading update...');
+    const res  = await fetch(latestUrl + '?t=' + Date.now());
+    const html = await res.text();
+
+    // Save backup automatically before update
+    const backup = {
+      version:1, exported:new Date().toISOString(),
+      students, attendance, settings, log, sectionNames, sectionInfo,
+      msgTemplate:    (document.getElementById('msg-template')||{}).value||'',
+      msgTemplateAdv: (document.getElementById('msg-template-adviser')||{}).value||''
+    };
+    localStorage.setItem('att4_pre_update_backup', JSON.stringify(backup));
+    toast('✔ Backup saved. Installing update...');
+
+    // Write new HTML to a blob and redirect
+    const blob = new Blob([html], {type:'text/html'});
+    const url  = URL.createObjectURL(blob);
+
+    // If on GitHub Pages, just reload — GitHub handles the update
+    if (window.location.hostname.includes('github.io')) {
+      // Force reload from server (bypass cache)
+      window.location.reload(true);
+    } else {
+      window.location.href = url;
+    }
+  } catch(e) {
+    alert('Could not download update.\n\nMake sure you have internet and try again.\n\nError: ' + e.message);
+  }
+}
+
+function dismissUpdate() {
+  const banner = document.getElementById('update-banner');
+  if (banner) banner.style.display = 'none';
+  // Remember dismissed version so we don't show it again until next version
+  localStorage.setItem('att4_dismissed_version', latestVersion);
+}
+const EMERGENCY_TEMPLATES = {
+  early:      'Good day po! This is Ma\'am Garcia, Math 10 Teacher. Please be informed that there will be EARLY DISMISSAL today. Kindly fetch your child as soon as possible. Thank you po!',
+  suspension: 'Good day po! This is Ma\'am Garcia, Math 10 Teacher. Classes are SUSPENDED today due to unavoidable circumstances. Please ensure your child\'s safety. Thank you po!',
+  earthquake: 'Good day po! This is Ma\'am Garcia, Math 10 Teacher. Due to the recent EARTHQUAKE, school operations are temporarily suspended. Please check on your child\'s safety. Thank you po!',
+  flood:      'Good day po! This is Ma\'am Garcia, Math 10 Teacher. Due to severe weather/flooding, classes are CANCELLED today. Stay safe and stay indoors po! Thank you!'
+};
+
+function setEmergencyTemplate(type) {
+  const el = document.getElementById('emergency-msg');
+  if (el) { el.value = EMERGENCY_TEMPLATES[type]; saveTemplates(); updateEmergencyCount(); }
+}
+
+function buildEmergencySectionCheckboxes() {
+  const container = document.getElementById('emergency-section-checkboxes');
+  if (!container) return;
+  container.innerHTML = sectionNames.map(s =>
+    `<label style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:500;cursor:pointer;background:#fff;border:1.5px solid #F09595;border-radius:8px;padding:5px 10px;">
+      <input type="checkbox" value="${s}" checked onchange="updateEmergencyCount()" style="accent-color:var(--red);width:14px;height:14px;"/>
+      ${s}
+    </label>`
+  ).join('');
+  updateEmergencyCount();
+}
+
+function getEmergencyRecipients() {
+  const boxes = document.querySelectorAll('#emergency-section-checkboxes input[type=checkbox]:checked');
+  const secs  = [...boxes].map(c => c.value);
+  const seen  = new Set();
+  return students.filter(s => {
+    if (!secs.includes(s.section) || !s.phone) return false;
+    if (seen.has(s.phone)) return false;
+    seen.add(s.phone); return true;
+  });
+}
+
+function updateEmergencyCount() {
+  const el = document.getElementById('emergency-count');
+  if (el) el.textContent = '📨 ' + getEmergencyRecipients().length + ' parent(s) will receive this message';
+}
+
+async function sendEmergencySemaphore() {
+  if (!settings.apikey) { alert('No Semaphore API key.\nGo to ⚙️ Setup → Semaphore Auto-SMS.'); return; }
+  const msg = (document.getElementById('emergency-msg')||{}).value||'';
+  if (!msg.trim()) { toast('Please type your message first.'); return; }
+  const recipients = getEmergencyRecipients();
+  if (!recipients.length) { toast('No recipients found.'); return; }
+  if (!confirm(
+    '🚨 EMERGENCY BROADCAST via Semaphore\n\n' +
+    '📨 ' + recipients.length + ' parents\n' +
+    '💰 Cost: ₱' + (recipients.length * 0.5).toFixed(2) + '\n\n' +
+    '"' + msg.substring(0,120) + (msg.length>120?'...':'') + '"\n\n' +
+    'Tap OK to send to ALL parents now.'
+  )) return;
+
+  let sent=0, failed=0;
+  toast('🚨 Sending to ' + recipients.length + ' parents...');
+  for (let i=0; i<recipients.length; i++) {
+    const s = recipients[i];
+    const phone   = s.phone.replace(/\D/g,'');
+    const fullMsg = settings.replyNum ? msg+' Reply/concerns: '+settings.replyNum : msg;
+    try {
+      const res = await fetch('https://api.semaphore.co/api/v4/messages',{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({apikey:settings.apikey, number:phone, message:fullMsg, sendername:settings.sender||'SEMAPHORE'})
+      });
+      const data = await res.json();
+      if (res.ok && !data.error) sent++; else failed++;
+    } catch(e) { semaphorePost(phone, fullMsg, ()=>{}); sent++; }
+    if ((i+1)%5===0 || i===recipients.length-1) toast('🚨 Sending... '+(i+1)+'/'+recipients.length);
+    await new Promise(r=>setTimeout(r,350));
+  }
+  alert('✔ Emergency Broadcast Complete!\n\n✅ Sent: '+sent+' parents'+(failed?'\n❌ Failed: '+failed:''));
+}
+
+function sendEmergencyPrepaid() {
+  const msg = (document.getElementById('emergency-msg')||{}).value||'';
+  if (!msg.trim()) { toast('Please type your message first.'); return; }
+  const recipients = getEmergencyRecipients();
+  if (!recipients.length) { toast('No recipients found.'); return; }
+  if (!confirm(
+    '🚨 EMERGENCY BROADCAST via Prepaid\n\n' +
+    '📨 '+recipients.length+' parents\n' +
+    '💰 ~₱'+recipients.length+' from your load\n\n' +
+    'Your SMS app opens for each parent — just tap Send each time.\n\nTap OK to start.'
+  )) return;
+  let idx=0;
+  function sendNext() {
+    if (idx>=recipients.length) { toast('✔ All '+recipients.length+' emergency messages queued!'); return; }
+    const s=recipients[idx];
+    const fullMsg=settings.replyNum?msg+' Reply/concerns: '+settings.replyNum:msg;
+    window.location.href='sms:'+s.phone+'?body='+encodeURIComponent(fullMsg);
+    idx++;
+    setTimeout(()=>{
+      if (idx<recipients.length) {
+        const nx=recipients[idx];
+        if (confirm('✔ '+idx+'/'+recipients.length+' sent\n\nNext: '+nx.name+'\n👤 '+(nx.parent||'—')+'\n📱 '+nx.phone+'\n\nContinue?')) sendNext();
+        else toast('Paused at '+idx+'/'+recipients.length+'. Tap Send ALL again to resume.');
+      } else toast('✔ All '+recipients.length+' done!');
+    },2000);
+  }
+  sendNext();
+}
+
 function exportBackup() {
   const t1 = document.getElementById('msg-template');
   const t2 = document.getElementById('msg-template-adviser');
@@ -2309,329 +2571,4 @@ function renderMonthlyOverview() {
     const pctColor = pct >= 90 ? 'var(--green)' : pct >= 75 ? 'var(--amber-dark)' : 'var(--red)';
     const lateWarn = r.late >= 3 ? `<span style="color:var(--red);font-size:10px;"> ⚠</span>` : '';
     return `<tr style="cursor:pointer;" onclick="showStudentProfile('${esc(r.name)}','${esc(r.section)}')" title="Click to view full record">
-      <td style="font-weight:600;font-size:12px;color:var(--blue);text-decoration:underline;">${r.name}</td>
-      <td><span class="pill" style="background:var(--green-light);color:var(--green-dark);font-size:10px;">${r.section}</span></td>
-      <td style="color:var(--green);font-weight:600;text-align:center;">${r.present}</td>
-      <td style="color:var(--amber-dark);font-weight:600;text-align:center;">${r.late}${lateWarn}</td>
-      <td style="color:var(--red);font-weight:600;text-align:center;">${r.absent}</td>
-      <td style="text-align:center;">${total}</td>
-      <td style="text-align:center;font-weight:700;color:${pctColor};">${pct}%</td>
-    </tr>`;
-  }).join('');
-}
-
-function exportMonthlyCSV() {
-  const sel    = document.getElementById('monthly-month');
-  const secSel = document.getElementById('monthly-section');
-  if (!sel || !sel.value) { toast('Select a month first.'); return; }
-  const [yr, mo] = sel.value.split('-');
-  const secF  = secSel ? secSel.value : '';
-  const month = parseInt(mo); const year = parseInt(yr);
-  const monthLabel = MONTH_NAMES[month-1]+' '+yr;
-
-  const monthLog = log.filter(r => {
-    const parts = r.date.split('/');
-    if (parts.length < 3) return false;
-    return parseInt(parts[0])===month && parseInt(parts[2])===year
-      && (!secF || r.section===secF);
-  });
-
-  // Dedup — latest entry per student per date
-  const latestMap = {};
-  monthLog.forEach(r => { latestMap[r.section+'|'+r.name+'|'+r.date] = r; });
-  const dedupedLog = Object.values(latestMap);
-
-  const studentMap = {};
-  dedupedLog.forEach(r => {
-    const k = r.section+'|'+r.name;
-    if (!studentMap[k]) studentMap[k]={name:r.name,section:r.section,present:0,late:0,absent:0};
-    if (r.status==='present') studentMap[k].present++;
-    else if (r.status==='late') studentMap[k].late++;
-    else if (r.status==='absent') studentMap[k].absent++;
-  });
-
-  const rows = Object.values(studentMap).sort((a,b)=>a.section.localeCompare(b.section)||a.name.localeCompare(b.name));
-  const csv = 'Student Name,Section,Present,Late,Absent,Total Days,Attendance %\n' +
-    rows.map(r => {
-      const total = r.present+r.late+r.absent;
-      const pct   = total>0 ? Math.round((r.present+r.late)/total*100) : 0;
-      return `"${r.name}","${r.section}",${r.present},${r.late},${r.absent},${total},${pct}%`;
-    }).join('\n');
-
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv'}));
-  a.download = `Monthly_Summary_${monthLabel.replace(' ','_')}${secF?'_'+secF:''}.csv`;
-  a.click();
-  toast('Monthly summary exported!');
-}
-
-// ══════════════════════════════════════
-// QR CODE
-// ══════════════════════════════════════
-function regenerateQR() {
-  const display = document.getElementById('qr-display');
-  display.innerHTML='';
-  const url = (settings.url&&settings.url.trim()) ? settings.url.trim() : window.location.href;
-  document.getElementById('qr-url-label').textContent=url;
-  try { new QRCode(display,{text:url,width:220,height:220,colorDark:'#085041',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H}); }
-  catch(e){ display.innerHTML='<div style="padding:20px;color:var(--text-muted);">Could not generate QR.</div>'; }
-}
-function downloadQR(){
-  const img=document.querySelector('#qr-display img')||document.querySelector('#qr-display canvas');
-  if(!img){toast('No QR yet.');return;}
-  const src=img.tagName==='CANVAS'?img.toDataURL():img.src;
-  const a=document.createElement('a');a.href=src;a.download='attendance_qr.png';a.click();
-}
-function printQR(){
-  const img=document.querySelector('#qr-display img')||document.querySelector('#qr-display canvas');
-  if(!img){toast('No QR yet.');return;}
-  const src=img.tagName==='CANVAS'?img.toDataURL():img.src;
-  const w=window.open('');
-  w.document.write(`<html><body style="text-align:center;padding:48px;font-family:sans-serif;">
-    <h2 style="color:#085041;">${settings.class||'Attendance'}</h2>
-    <p style="color:#888;">${settings.teacher||''} &nbsp;|&nbsp; ${settings.sy||''}</p>
-    <p style="color:#aaa;font-size:13px;margin-bottom:20px;">Scan to open attendance sheet</p>
-    <img src="${src}" style="width:260px;height:260px;border:6px solid #fff;box-shadow:0 2px 20px rgba(0,0,0,.15);border-radius:12px;"/>
-  </body></html>`);
-  setTimeout(()=>w.print(),500);
-}
-
-// ══════════════════════════════════════
-// SEMAPHORE SMS
-// ══════════════════════════════════════
-// ══ SEMAPHORE SMS — uses form POST to bypass CORS ══
-function semaphorePost(phone, message, callback) {
-  const apikey  = settings.apikey;
-  const sender  = settings.sender || 'SEMAPHORE';
-  const number  = phone.replace(/\D/g, '');
-
-  // Create a hidden iframe to receive the response
-  const iframeId = 'sms_iframe_' + Date.now();
-  const formId   = 'sms_form_' + Date.now();
-
-  const iframe = document.createElement('iframe');
-  iframe.name  = iframeId;
-  iframe.id    = iframeId;
-  iframe.style.display = 'none';
-  document.body.appendChild(iframe);
-
-  const form = document.createElement('form');
-  form.method  = 'POST';
-  form.action  = 'https://api.semaphore.co/api/v4/messages';
-  form.target  = iframeId;
-  form.id      = formId;
-  form.style.display = 'none';
-
-  const fields = { apikey, number, message, sendername: sender };
-  Object.entries(fields).forEach(([k,v]) => {
-    const input = document.createElement('input');
-    input.type  = 'hidden';
-    input.name  = k;
-    input.value = v;
-    form.appendChild(input);
-  });
-
-  document.body.appendChild(form);
-
-  // Clean up after submit
-  iframe.onload = function() {
-    setTimeout(() => {
-      try { document.body.removeChild(iframe); } catch(e){}
-      try { document.body.removeChild(form);   } catch(e){}
-    }, 3000);
-    if (callback) callback(true);
-  };
-
-  form.submit();
-}
-
-async function sendSemaphoreSMS(student, status, time, isTest=false) {
-  const phone   = student.phone.replace(/\D/g,'');
-  const message = isTest
-    ? 'Test message from your Attendance System. Semaphore is working!'
-    : buildMsg(student, status, time);
-  const key     = attKey(student.section, student.name);
-
-  if (!isTest && attendance[key]) {
-    attendance[key].smsSending = true;
-    renderStudents();
-  }
-  toast('📡 Sending SMS to ' + (student.parent || student.name) + '…');
-
-  try {
-    // Try fetch first (works when CORS is allowed)
-    const res  = await fetch('https://api.semaphore.co/api/v4/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        apikey:     settings.apikey,
-        number:     phone,
-        message,
-        sendername: settings.sender || 'SEMAPHORE'
-      })
-    });
-    const data = await res.json();
-    if (!isTest && attendance[key]) {
-      attendance[key].smsSending = false;
-      if (res.ok && !data.error) {
-        attendance[key].smsSent   = true;
-        attendance[key].smsFailed = false;
-        save(); toast('✔ SMS sent to ' + (student.parent || student.name));
-      } else {
-        attendance[key].smsFailed = true;
-        attendance[key].smsSent   = false;
-        save(); toast('✘ SMS failed: ' + (data.message || 'Error'));
-      }
-      renderStudents();
-    } else if (isTest) {
-      alert(res.ok ? '✔ Test SMS sent! Check your phone.' : '✘ Failed: ' + (data.message || JSON.stringify(data)));
-    }
-  } catch(e) {
-    // Fetch blocked by CORS — fall back to form POST method
-    toast('📡 Using alternate send method…');
-    if (!isTest && attendance[key]) {
-      attendance[key].smsSending = false;
-    }
-    semaphorePost(phone, message, (ok) => {
-      if (!isTest && attendance[key]) {
-        attendance[key].smsSent   = true;
-        attendance[key].smsFailed = false;
-        save(); renderStudents();
-        toast('✔ SMS sent to ' + (student.parent || student.name));
-      } else if (isTest) {
-        alert('✔ SMS submitted! Check your phone in a few seconds.\n\nIf you do not receive it, verify your API key and sender name at semaphore.co');
-      }
-    });
-  }
-}
-
-async function testSemaphore() {
-  const apikey = document.getElementById('setup-apikey').value.trim();
-  const phone  = document.getElementById('setup-testphone').value.trim();
-  if (!apikey) { alert('Please paste your Semaphore API key first.'); return; }
-  if (!phone)  { alert('Please enter your phone number for the test.'); return; }
-  toast('📡 Sending test SMS…');
-  await sendSemaphoreSMS(
-    {name:'Test', parent:'Teacher', phone, section:'Test'},
-    null, getTime(), true
-  );
-}
-
-// ══════════════════════════════════════
-// HELPERS
-// ══════════════════════════════════════
-function closeModal(id){document.getElementById(id).classList.remove('open');modalTarget=null;}
-function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',2800);}
-function esc(s){return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
-
-document.getElementById('modal-status').addEventListener('click',function(e){if(e.target===this)closeModal('modal-status');});
-// ══ STUDENT PROFILE ══
-let profileStudent = null;
-let profileSection = null;
-
-function showStudentProfile(name, section) {
-  profileStudent = name;
-  profileSection = section;
-
-  const s = students.find(x => x.name === name && x.section === section);
-  document.getElementById('profile-name').textContent = name;
-  document.getElementById('profile-meta').textContent =
-    '📚 ' + section + (s ? '  👤 ' + (s.parent||'—') + '  📱 ' + (s.phone||'—') : '');
-
-  // Build month filter options from this student's records
-  const studentLog = log.filter(r => r.name === name && r.section === section);
-  const months = new Set();
-  studentLog.forEach(r => {
-    const parts = r.date.split('/');
-    if (parts.length >= 3) months.add(parts[2]+'-'+parts[0].padStart(2,'0'));
-  });
-  const sel = document.getElementById('profile-month-filter');
-  sel.innerHTML = '<option value="">All Months</option>' +
-    [...months].sort().reverse().map(m => {
-      const [yr,mo] = m.split('-');
-      return `<option value="${m}">${MONTH_NAMES[parseInt(mo)-1]} ${yr}</option>`;
-    }).join('');
-
-  renderProfileRecords();
-  document.getElementById('modal-profile').classList.add('open');
-}
-
-function renderProfileRecords() {
-  const name    = profileStudent;
-  const section = profileSection;
-  const monthF  = document.getElementById('profile-month-filter').value;
-
-  // Get all records for this student — deduped by latest per date
-  const allRecs = log.filter(r => r.name === name && r.section === section);
-  const latestMap = {};
-  allRecs.forEach(r => { latestMap[r.date] = r; });
-  let records = Object.values(latestMap).sort((a,b) => {
-    // Sort by date descending
-    const da = new Date(a.date.split('/')[2]+'-'+a.date.split('/')[0].padStart(2,'0')+'-'+a.date.split('/')[1].padStart(2,'0'));
-    const db = new Date(b.date.split('/')[2]+'-'+b.date.split('/')[0].padStart(2,'0')+'-'+b.date.split('/')[1].padStart(2,'0'));
-    return db - da;
-  });
-
-  // Apply month filter
-  if (monthF) {
-    const [yr,mo] = monthF.split('-');
-    records = records.filter(r => {
-      const parts = r.date.split('/');
-      return parts.length >= 3 && parseInt(parts[0])===parseInt(mo) && parseInt(parts[2])===parseInt(yr);
-    });
-  }
-
-  // Summary stats
-  const present = records.filter(r=>r.status==='present').length;
-  const late    = records.filter(r=>r.status==='late').length;
-  const absent  = records.filter(r=>r.status==='absent').length;
-  const total   = records.length;
-  const pct     = total > 0 ? Math.round((present+late)/total*100) : 0;
-  const pctColor= pct>=90?'var(--green)':pct>=75?'var(--amber-dark)':'var(--red)';
-
-  document.getElementById('profile-stats').innerHTML = `
-    <div style="background:var(--green-light);border-radius:8px;padding:8px;text-align:center;">
-      <div style="font-size:18px;font-weight:700;color:var(--green);">${present}</div>
-      <div style="font-size:10px;color:var(--green-dark);">Present</div>
-    </div>
-    <div style="background:var(--amber-light);border-radius:8px;padding:8px;text-align:center;">
-      <div style="font-size:18px;font-weight:700;color:var(--amber-dark);">${late}</div>
-      <div style="font-size:10px;color:var(--amber-dark);">Late</div>
-    </div>
-    <div style="background:var(--red-light);border-radius:8px;padding:8px;text-align:center;">
-      <div style="font-size:18px;font-weight:700;color:var(--red);">${absent}</div>
-      <div style="font-size:10px;color:var(--red);">Absent</div>
-    </div>
-    <div style="background:var(--gray-light);border-radius:8px;padding:8px;text-align:center;">
-      <div style="font-size:18px;font-weight:700;color:${pctColor};">${pct}%</div>
-      <div style="font-size:10px;color:var(--text-muted);">Attendance</div>
-    </div>`;
-
-  const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  const sc = {present:'#E1F5EE',late:'#FAEEDA',absent:'#FCEBEB'};
-  const tc = {present:'#085041',late:'#633806',absent:'#A32D2D'};
-  const icons = {present:'✔',late:'⏰',absent:'✘'};
-
-  const tbody = document.getElementById('profile-records');
-  if (!records.length) {
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:20px;">No records found.</td></tr>';
-    return;
-  }
-  tbody.innerHTML = records.map(r => {
-    const parts = r.date.split('/');
-    const dayName = parts.length>=3 ? DAYS[new Date(parts[2]+'-'+parts[0].padStart(2,'0')+'-'+parts[1].padStart(2,'0')).getDay()] : '—';
-    return `<tr>
-      <td style="font-size:12px;font-weight:600;">${r.date}</td>
-      <td style="font-size:12px;color:var(--text-muted);">${dayName}</td>
-      <td><span class="pill" style="background:${sc[r.status]};color:${tc[r.status]};">${icons[r.status]} ${r.status}</span></td>
-      <td style="font-size:12px;color:var(--text-muted);">${r.time||'—'}</td>
-    </tr>`;
-  }).join('');
-}
-
-document.getElementById('modal-profile').addEventListener('click',function(e){if(e.target===this)closeModal('modal-profile');});
-
-try { init(); } catch(e) { console.error('Init error:', e); document.body.innerHTML += '<div style="position:fixed;bottom:0;left:0;right:0;background:#A32D2D;color:#fff;padding:12px;font-size:12px;z-index:9999;">⚠ App error: '+e.message+'. Please refresh the page.</div>'; }
-</script>
-</body>
-</html>
+      <td style="font-weight:600;font-size:12px;color:var(--blue);text-decoration:underline;">${r.
