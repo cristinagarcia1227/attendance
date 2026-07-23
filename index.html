@@ -1,0 +1,2909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Class Attendance System</title>
+<script>
+var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this.parsedData=[];for(var b=[],d=0,e=this.data.length;e>d;d++){var f=this.data.charCodeAt(d);f>65536?(b[0]=240|(1835008&f)>>>18,b[1]=128|(258048&f)>>>12,b[2]=128|(4032&f)>>>6,b[3]=128|63&f):f>2048?(b[0]=224|(61440&f)>>>12,b[1]=128|(4032&f)>>>6,b[2]=128|63&f):f>128?(b[0]=192|(1984&f)>>>6,b[1]=128|63&f):b[0]=f,this.parsedData=this.parsedData.concat(b)}this.parsedData.length!=this.data.length&&(this.parsedData.unshift(191),this.parsedData.unshift(187),this.parsedData.unshift(239))}function b(a,b){this.typeNumber=a,this.errorCorrectLevel=b,this.modules=null,this.moduleCount=0,this.dataCache=null,this.dataList=[]}function i(a,b){if(void 0==a.length)throw new Error(a.length+"/"+b);for(var c=0;c<a.length&&0==a[c];)c++;this.num=new Array(a.length-c+b);for(var d=0;d<a.length-c;d++)this.num[d]=a[d+c]}function j(a,b){this.totalCount=a,this.dataCount=b}function k(){this.buffer=[],this.length=0}function m(){return"undefined"!=typeof CanvasRenderingContext2D}function n(){var a=!1,b=navigator.userAgent;return/android/i.test(b)&&(a=!0,aMat=b.toString().match(/android ([0-9]\.[0-9])/i),aMat&&aMat[1]&&(a=parseFloat(aMat[1]))),a}function r(a,b){for(var c=1,e=s(a),f=0,g=l.length;g>=f;f++){var h=0;switch(b){case d.L:h=l[f][0];break;case d.M:h=l[f][1];break;case d.Q:h=l[f][2];break;case d.H:h=l[f][3]}if(h>=e)break;c++}if(c>l.length)throw new Error("Too long data");return c}function s(a){var b=encodeURI(a).toString().replace(/\%[0-9a-fA-F]{2}/g,"a");return b.length+(b.length!=a?3:0)}a.prototype={getLength:function(){return this.parsedData.length},write:function(a){for(var b=0,c=this.parsedData.length;c>b;b++)a.put(this.parsedData[b],8)}},b.prototype={addData:function(b){var c=new a(b);this.dataList.push(c),this.dataCache=null},isDark:function(a,b){if(0>a||this.moduleCount<=a||0>b||this.moduleCount<=b)throw new Error(a+","+b);return this.modules[a][b]},getModuleCount:function(){return this.moduleCount},make:function(){this.makeImpl(!1,this.getBestMaskPattern())},makeImpl:function(a,c){this.moduleCount=4*this.typeNumber+17,this.modules=new Array(this.moduleCount);for(var d=0;d<this.moduleCount;d++){this.modules[d]=new Array(this.moduleCount);for(var e=0;e<this.moduleCount;e++)this.modules[d][e]=null}this.setupPositionProbePattern(0,0),this.setupPositionProbePattern(this.moduleCount-7,0),this.setupPositionProbePattern(0,this.moduleCount-7),this.setupPositionAdjustPattern(),this.setupTimingPattern(),this.setupTypeInfo(a,c),this.typeNumber>=7&&this.setupTypeNumber(a),null==this.dataCache&&(this.dataCache=b.createData(this.typeNumber,this.errorCorrectLevel,this.dataList)),this.mapData(this.dataCache,c)},setupPositionProbePattern:function(a,b){for(var c=-1;7>=c;c++)if(!(-1>=a+c||this.moduleCount<=a+c))for(var d=-1;7>=d;d++)-1>=b+d||this.moduleCount<=b+d||(this.modules[a+c][b+d]=c>=0&&6>=c&&(0==d||6==d)||d>=0&&6>=d&&(0==c||6==c)||c>=2&&4>=c&&d>=2&&4>=d?!0:!1)},getBestMaskPattern:function(){for(var a=0,b=0,c=0;8>c;c++){this.makeImpl(!0,c);var d=f.getLostPoint(this);(0==c||a>d)&&(a=d,b=c)}return b},createMovieClip:function(a,b,c){var d=a.createEmptyMovieClip(b,c),e=1;this.make();for(var f=0;f<this.modules.length;f++)for(var g=f*e,h=0;h<this.modules[f].length;h++){var i=h*e,j=this.modules[f][h];j&&(d.beginFill(0,100),d.moveTo(i,g),d.lineTo(i+e,g),d.lineTo(i+e,g+e),d.lineTo(i,g+e),d.endFill())}return d},setupTimingPattern:function(){for(var a=8;a<this.moduleCount-8;a++)null==this.modules[a][6]&&(this.modules[a][6]=0==a%2);for(var b=8;b<this.moduleCount-8;b++)null==this.modules[6][b]&&(this.modules[6][b]=0==b%2)},setupPositionAdjustPattern:function(){for(var a=f.getPatternPosition(this.typeNumber),b=0;b<a.length;b++)for(var c=0;c<a.length;c++){var d=a[b],e=a[c];if(null==this.modules[d][e])for(var g=-2;2>=g;g++)for(var h=-2;2>=h;h++)this.modules[d+g][e+h]=-2==g||2==g||-2==h||2==h||0==g&&0==h?!0:!1}},setupTypeNumber:function(a){for(var b=f.getBCHTypeNumber(this.typeNumber),c=0;18>c;c++){var d=!a&&1==(1&b>>c);this.modules[Math.floor(c/3)][c%3+this.moduleCount-8-3]=d}for(var c=0;18>c;c++){var d=!a&&1==(1&b>>c);this.modules[c%3+this.moduleCount-8-3][Math.floor(c/3)]=d}},setupTypeInfo:function(a,b){for(var c=this.errorCorrectLevel<<3|b,d=f.getBCHTypeInfo(c),e=0;15>e;e++){var g=!a&&1==(1&d>>e);6>e?this.modules[e][8]=g:8>e?this.modules[e+1][8]=g:this.modules[this.moduleCount-15+e][8]=g}for(var e=0;15>e;e++){var g=!a&&1==(1&d>>e);8>e?this.modules[8][this.moduleCount-e-1]=g:9>e?this.modules[8][15-e-1+1]=g:this.modules[8][15-e-1]=g}this.modules[this.moduleCount-8][8]=!a},mapData:function(a,b){for(var c=-1,d=this.moduleCount-1,e=7,g=0,h=this.moduleCount-1;h>0;h-=2)for(6==h&&h--;;){for(var i=0;2>i;i++)if(null==this.modules[d][h-i]){var j=!1;g<a.length&&(j=1==(1&a[g]>>>e));var k=f.getMask(b,d,h-i);k&&(j=!j),this.modules[d][h-i]=j,e--,-1==e&&(g++,e=7)}if(d+=c,0>d||this.moduleCount<=d){d-=c,c=-c;break}}}},b.PAD0=236,b.PAD1=17,b.createData=function(a,c,d){for(var e=j.getRSBlocks(a,c),g=new k,h=0;h<d.length;h++){var i=d[h];g.put(i.mode,4),g.put(i.getLength(),f.getLengthInBits(i.mode,a)),i.write(g)}for(var l=0,h=0;h<e.length;h++)l+=e[h].dataCount;if(g.getLengthInBits()>8*l)throw new Error("code length overflow. ("+g.getLengthInBits()+">"+8*l+")");for(g.getLengthInBits()+4<=8*l&&g.put(0,4);0!=g.getLengthInBits()%8;)g.putBit(!1);for(;;){if(g.getLengthInBits()>=8*l)break;if(g.put(b.PAD0,8),g.getLengthInBits()>=8*l)break;g.put(b.PAD1,8)}return b.createBytes(g,e)},b.createBytes=function(a,b){for(var c=0,d=0,e=0,g=new Array(b.length),h=new Array(b.length),j=0;j<b.length;j++){var k=b[j].dataCount,l=b[j].totalCount-k;d=Math.max(d,k),e=Math.max(e,l),g[j]=new Array(k);for(var m=0;m<g[j].length;m++)g[j][m]=255&a.buffer[m+c];c+=k;var n=f.getErrorCorrectPolynomial(l),o=new i(g[j],n.getLength()-1),p=o.mod(n);h[j]=new Array(n.getLength()-1);for(var m=0;m<h[j].length;m++){var q=m+p.getLength()-h[j].length;h[j][m]=q>=0?p.get(q):0}}for(var r=0,m=0;m<b.length;m++)r+=b[m].totalCount;for(var s=new Array(r),t=0,m=0;d>m;m++)for(var j=0;j<b.length;j++)m<g[j].length&&(s[t++]=g[j][m]);for(var m=0;e>m;m++)for(var j=0;j<b.length;j++)m<h[j].length&&(s[t++]=h[j][m]);return s};for(var c={MODE_NUMBER:1,MODE_ALPHA_NUM:2,MODE_8BIT_BYTE:4,MODE_KANJI:8},d={L:1,M:0,Q:3,H:2},e={PATTERN000:0,PATTERN001:1,PATTERN010:2,PATTERN011:3,PATTERN100:4,PATTERN101:5,PATTERN110:6,PATTERN111:7},f={PATTERN_POSITION_TABLE:[[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50],[6,30,54],[6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],[6,26,50,74],[6,30,54,78],[6,30,56,82],[6,30,58,86],[6,34,62,90],[6,28,50,72,94],[6,26,50,74,98],[6,30,54,78,102],[6,28,54,80,106],[6,32,58,84,110],[6,30,58,86,114],[6,34,62,90,118],[6,26,50,74,98,122],[6,30,54,78,102,126],[6,26,52,78,104,130],[6,30,56,82,108,134],[6,34,60,86,112,138],[6,30,58,86,114,142],[6,34,62,90,118,146],[6,30,54,78,102,126,150],[6,24,50,76,102,128,154],[6,28,54,80,106,132,158],[6,32,58,84,110,136,162],[6,26,54,82,110,138,166],[6,30,58,86,114,142,170]],G15:1335,G18:7973,G15_MASK:21522,getBCHTypeInfo:function(a){for(var b=a<<10;f.getBCHDigit(b)-f.getBCHDigit(f.G15)>=0;)b^=f.G15<<f.getBCHDigit(b)-f.getBCHDigit(f.G15);return(a<<10|b)^f.G15_MASK},getBCHTypeNumber:function(a){for(var b=a<<12;f.getBCHDigit(b)-f.getBCHDigit(f.G18)>=0;)b^=f.G18<<f.getBCHDigit(b)-f.getBCHDigit(f.G18);return a<<12|b},getBCHDigit:function(a){for(var b=0;0!=a;)b++,a>>>=1;return b},getPatternPosition:function(a){return f.PATTERN_POSITION_TABLE[a-1]},getMask:function(a,b,c){switch(a){case e.PATTERN000:return 0==(b+c)%2;case e.PATTERN001:return 0==b%2;case e.PATTERN010:return 0==c%3;case e.PATTERN011:return 0==(b+c)%3;case e.PATTERN100:return 0==(Math.floor(b/2)+Math.floor(c/3))%2;case e.PATTERN101:return 0==b*c%2+b*c%3;case e.PATTERN110:return 0==(b*c%2+b*c%3)%2;case e.PATTERN111:return 0==(b*c%3+(b+c)%2)%2;default:throw new Error("bad maskPattern:"+a)}},getErrorCorrectPolynomial:function(a){for(var b=new i([1],0),c=0;a>c;c++)b=b.multiply(new i([1,g.gexp(c)],0));return b},getLengthInBits:function(a,b){if(b>=1&&10>b)switch(a){case c.MODE_NUMBER:return 10;case c.MODE_ALPHA_NUM:return 9;case c.MODE_8BIT_BYTE:return 8;case c.MODE_KANJI:return 8;default:throw new Error("mode:"+a)}else if(27>b)switch(a){case c.MODE_NUMBER:return 12;case c.MODE_ALPHA_NUM:return 11;case c.MODE_8BIT_BYTE:return 16;case c.MODE_KANJI:return 10;default:throw new Error("mode:"+a)}else{if(!(41>b))throw new Error("type:"+b);switch(a){case c.MODE_NUMBER:return 14;case c.MODE_ALPHA_NUM:return 13;case c.MODE_8BIT_BYTE:return 16;case c.MODE_KANJI:return 12;default:throw new Error("mode:"+a)}}},getLostPoint:function(a){for(var b=a.getModuleCount(),c=0,d=0;b>d;d++)for(var e=0;b>e;e++){for(var f=0,g=a.isDark(d,e),h=-1;1>=h;h++)if(!(0>d+h||d+h>=b))for(var i=-1;1>=i;i++)0>e+i||e+i>=b||(0!=h||0!=i)&&g==a.isDark(d+h,e+i)&&f++;f>5&&(c+=3+f-5)}for(var d=0;b-1>d;d++)for(var e=0;b-1>e;e++){var j=0;a.isDark(d,e)&&j++,a.isDark(d+1,e)&&j++,a.isDark(d,e+1)&&j++,a.isDark(d+1,e+1)&&j++,(0==j||4==j)&&(c+=3)}for(var d=0;b>d;d++)for(var e=0;b-6>e;e++)a.isDark(d,e)&&!a.isDark(d,e+1)&&a.isDark(d,e+2)&&a.isDark(d,e+3)&&a.isDark(d,e+4)&&!a.isDark(d,e+5)&&a.isDark(d,e+6)&&(c+=40);for(var e=0;b>e;e++)for(var d=0;b-6>d;d++)a.isDark(d,e)&&!a.isDark(d+1,e)&&a.isDark(d+2,e)&&a.isDark(d+3,e)&&a.isDark(d+4,e)&&!a.isDark(d+5,e)&&a.isDark(d+6,e)&&(c+=40);for(var k=0,e=0;b>e;e++)for(var d=0;b>d;d++)a.isDark(d,e)&&k++;var l=Math.abs(100*k/b/b-50)/5;return c+=10*l}},g={glog:function(a){if(1>a)throw new Error("glog("+a+")");return g.LOG_TABLE[a]},gexp:function(a){for(;0>a;)a+=255;for(;a>=256;)a-=255;return g.EXP_TABLE[a]},EXP_TABLE:new Array(256),LOG_TABLE:new Array(256)},h=0;8>h;h++)g.EXP_TABLE[h]=1<<h;for(var h=8;256>h;h++)g.EXP_TABLE[h]=g.EXP_TABLE[h-4]^g.EXP_TABLE[h-5]^g.EXP_TABLE[h-6]^g.EXP_TABLE[h-8];for(var h=0;255>h;h++)g.LOG_TABLE[g.EXP_TABLE[h]]=h;i.prototype={get:function(a){return this.num[a]},getLength:function(){return this.num.length},multiply:function(a){for(var b=new Array(this.getLength()+a.getLength()-1),c=0;c<this.getLength();c++)for(var d=0;d<a.getLength();d++)b[c+d]^=g.gexp(g.glog(this.get(c))+g.glog(a.get(d)));return new i(b,0)},mod:function(a){if(this.getLength()-a.getLength()<0)return this;for(var b=g.glog(this.get(0))-g.glog(a.get(0)),c=new Array(this.getLength()),d=0;d<this.getLength();d++)c[d]=this.get(d);for(var d=0;d<a.getLength();d++)c[d]^=g.gexp(g.glog(a.get(d))+b);return new i(c,0).mod(a)}},j.RS_BLOCK_TABLE=[[1,26,19],[1,26,16],[1,26,13],[1,26,9],[1,44,34],[1,44,28],[1,44,22],[1,44,16],[1,70,55],[1,70,44],[2,35,17],[2,35,13],[1,100,80],[2,50,32],[2,50,24],[4,25,9],[1,134,108],[2,67,43],[2,33,15,2,34,16],[2,33,11,2,34,12],[2,86,68],[4,43,27],[4,43,19],[4,43,15],[2,98,78],[4,49,31],[2,32,14,4,33,15],[4,39,13,1,40,14],[2,121,97],[2,60,38,2,61,39],[4,40,18,2,41,19],[4,40,14,2,41,15],[2,146,116],[3,58,36,2,59,37],[4,36,16,4,37,17],[4,36,12,4,37,13],[2,86,68,2,87,69],[4,69,43,1,70,44],[6,43,19,2,44,20],[6,43,15,2,44,16],[4,101,81],[1,80,50,4,81,51],[4,50,22,4,51,23],[3,36,12,8,37,13],[2,116,92,2,117,93],[6,58,36,2,59,37],[4,46,20,6,47,21],[7,42,14,4,43,15],[4,133,107],[8,59,37,1,60,38],[8,44,20,4,45,21],[12,33,11,4,34,12],[3,145,115,1,146,116],[4,64,40,5,65,41],[11,36,16,5,37,17],[11,36,12,5,37,13],[5,109,87,1,110,88],[5,65,41,5,66,42],[5,54,24,7,55,25],[11,36,12],[5,122,98,1,123,99],[7,73,45,3,74,46],[15,43,19,2,44,20],[3,45,15,13,46,16],[1,135,107,5,136,108],[10,74,46,1,75,47],[1,50,22,15,51,23],[2,42,14,17,43,15],[5,150,120,1,151,121],[9,69,43,4,70,44],[17,50,22,1,51,23],[2,42,14,19,43,15],[3,141,113,4,142,114],[3,70,44,11,71,45],[17,47,21,4,48,22],[9,39,13,16,40,14],[3,135,107,5,136,108],[3,67,41,13,68,42],[15,54,24,5,55,25],[15,43,15,10,44,16],[4,144,116,4,145,117],[17,68,42],[17,50,22,6,51,23],[19,46,16,6,47,17],[2,139,111,7,140,112],[17,74,46],[7,54,24,16,55,25],[34,37,13],[4,151,121,5,152,122],[4,75,47,14,76,48],[11,54,24,14,55,25],[16,45,15,14,46,16],[6,147,117,4,148,118],[6,73,45,14,74,46],[11,54,24,16,55,25],[30,46,16,2,47,17],[8,132,106,4,133,107],[8,75,47,13,76,48],[7,54,24,22,55,25],[22,45,15,13,46,16],[10,142,114,2,143,115],[19,74,46,4,75,47],[28,50,22,6,51,23],[33,46,16,4,47,17],[8,152,122,4,153,123],[22,73,45,3,74,46],[8,53,23,26,54,24],[12,45,15,28,46,16],[3,147,117,10,148,118],[3,73,45,23,74,46],[4,54,24,31,55,25],[11,45,15,31,46,16],[7,146,116,7,147,117],[21,73,45,7,74,46],[1,53,23,37,54,24],[19,45,15,26,46,16],[5,145,115,10,146,116],[19,75,47,10,76,48],[15,54,24,25,55,25],[23,45,15,25,46,16],[13,145,115,3,146,116],[2,74,46,29,75,47],[42,54,24,1,55,25],[23,45,15,28,46,16],[17,145,115],[10,74,46,23,75,47],[10,54,24,35,55,25],[19,45,15,35,46,16],[17,145,115,1,146,116],[14,74,46,21,75,47],[29,54,24,19,55,25],[11,45,15,46,46,16],[13,145,115,6,146,116],[14,74,46,23,75,47],[44,54,24,7,55,25],[59,46,16,1,47,17],[12,151,121,7,152,122],[12,75,47,26,76,48],[39,54,24,14,55,25],[22,45,15,41,46,16],[6,151,121,14,152,122],[6,75,47,34,76,48],[46,54,24,10,55,25],[2,45,15,64,46,16],[17,152,122,4,153,123],[29,74,46,14,75,47],[49,54,24,10,55,25],[24,45,15,46,46,16],[4,152,122,18,153,123],[13,74,46,32,75,47],[48,54,24,14,55,25],[42,45,15,32,46,16],[20,147,117,4,148,118],[40,75,47,7,76,48],[43,54,24,22,55,25],[10,45,15,67,46,16],[19,148,118,6,149,119],[18,75,47,31,76,48],[34,54,24,34,55,25],[20,45,15,61,46,16]],j.getRSBlocks=function(a,b){var c=j.getRsBlockTable(a,b);if(void 0==c)throw new Error("bad rs block @ typeNumber:"+a+"/errorCorrectLevel:"+b);for(var d=c.length/3,e=[],f=0;d>f;f++)for(var g=c[3*f+0],h=c[3*f+1],i=c[3*f+2],k=0;g>k;k++)e.push(new j(h,i));return e},j.getRsBlockTable=function(a,b){switch(b){case d.L:return j.RS_BLOCK_TABLE[4*(a-1)+0];case d.M:return j.RS_BLOCK_TABLE[4*(a-1)+1];case d.Q:return j.RS_BLOCK_TABLE[4*(a-1)+2];case d.H:return j.RS_BLOCK_TABLE[4*(a-1)+3];default:return void 0}},k.prototype={get:function(a){var b=Math.floor(a/8);return 1==(1&this.buffer[b]>>>7-a%8)},put:function(a,b){for(var c=0;b>c;c++)this.putBit(1==(1&a>>>b-c-1))},getLengthInBits:function(){return this.length},putBit:function(a){var b=Math.floor(this.length/8);this.buffer.length<=b&&this.buffer.push(0),a&&(this.buffer[b]|=128>>>this.length%8),this.length++}};var l=[[17,14,11,7],[32,26,20,14],[53,42,32,24],[78,62,46,34],[106,84,60,44],[134,106,74,58],[154,122,86,64],[192,152,108,84],[230,180,130,98],[271,213,151,119],[321,251,177,137],[367,287,203,155],[425,331,241,177],[458,362,258,194],[520,412,292,220],[586,450,322,250],[644,504,364,280],[718,560,394,310],[792,624,442,338],[858,666,482,382],[929,711,509,403],[1003,779,565,439],[1091,857,611,461],[1171,911,661,511],[1273,997,715,535],[1367,1059,751,593],[1465,1125,805,625],[1528,1190,868,658],[1628,1264,908,698],[1732,1370,982,742],[1840,1452,1030,790],[1952,1538,1112,842],[2068,1628,1168,898],[2188,1722,1228,958],[2303,1809,1283,983],[2431,1911,1351,1051],[2563,1989,1423,1093],[2699,2099,1499,1139],[2809,2213,1579,1219],[2953,2331,1663,1273]],o=function(){var a=function(a,b){this._el=a,this._htOption=b};return a.prototype.draw=function(a){function g(a,b){var c=document.createElementNS("http://www.w3.org/2000/svg",a);for(var d in b)b.hasOwnProperty(d)&&c.setAttribute(d,b[d]);return c}var b=this._htOption,c=this._el,d=a.getModuleCount();Math.floor(b.width/d),Math.floor(b.height/d),this.clear();var h=g("svg",{viewBox:"0 0 "+String(d)+" "+String(d),width:"100%",height:"100%",fill:b.colorLight});h.setAttributeNS("http://www.w3.org/2000/xmlns/","xmlns:xlink","http://www.w3.org/1999/xlink"),c.appendChild(h),h.appendChild(g("rect",{fill:b.colorDark,width:"1",height:"1",id:"template"}));for(var i=0;d>i;i++)for(var j=0;d>j;j++)if(a.isDark(i,j)){var k=g("use",{x:String(i),y:String(j)});k.setAttributeNS("http://www.w3.org/1999/xlink","href","#template"),h.appendChild(k)}},a.prototype.clear=function(){for(;this._el.hasChildNodes();)this._el.removeChild(this._el.lastChild)},a}(),p="svg"===document.documentElement.tagName.toLowerCase(),q=p?o:m()?function(){function a(){this._elImage.src=this._elCanvas.toDataURL("image/png"),this._elImage.style.display="block",this._elCanvas.style.display="none"}function d(a,b){var c=this;if(c._fFail=b,c._fSuccess=a,null===c._bSupportDataURI){var d=document.createElement("img"),e=function(){c._bSupportDataURI=!1,c._fFail&&_fFail.call(c)},f=function(){c._bSupportDataURI=!0,c._fSuccess&&c._fSuccess.call(c)};return d.onabort=e,d.onerror=e,d.onload=f,d.src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==",void 0}c._bSupportDataURI===!0&&c._fSuccess?c._fSuccess.call(c):c._bSupportDataURI===!1&&c._fFail&&c._fFail.call(c)}if(this._android&&this._android<=2.1){var b=1/window.devicePixelRatio,c=CanvasRenderingContext2D.prototype.drawImage;CanvasRenderingContext2D.prototype.drawImage=function(a,d,e,f,g,h,i,j){if("nodeName"in a&&/img/i.test(a.nodeName))for(var l=arguments.length-1;l>=1;l--)arguments[l]=arguments[l]*b;else"undefined"==typeof j&&(arguments[1]*=b,arguments[2]*=b,arguments[3]*=b,arguments[4]*=b);c.apply(this,arguments)}}var e=function(a,b){this._bIsPainted=!1,this._android=n(),this._htOption=b,this._elCanvas=document.createElement("canvas"),this._elCanvas.width=b.width,this._elCanvas.height=b.height,a.appendChild(this._elCanvas),this._el=a,this._oContext=this._elCanvas.getContext("2d"),this._bIsPainted=!1,this._elImage=document.createElement("img"),this._elImage.style.display="none",this._el.appendChild(this._elImage),this._bSupportDataURI=null};return e.prototype.draw=function(a){var b=this._elImage,c=this._oContext,d=this._htOption,e=a.getModuleCount(),f=d.width/e,g=d.height/e,h=Math.round(f),i=Math.round(g);b.style.display="none",this.clear();for(var j=0;e>j;j++)for(var k=0;e>k;k++){var l=a.isDark(j,k),m=k*f,n=j*g;c.strokeStyle=l?d.colorDark:d.colorLight,c.lineWidth=1,c.fillStyle=l?d.colorDark:d.colorLight,c.fillRect(m,n,f,g),c.strokeRect(Math.floor(m)+.5,Math.floor(n)+.5,h,i),c.strokeRect(Math.ceil(m)-.5,Math.ceil(n)-.5,h,i)}this._bIsPainted=!0},e.prototype.makeImage=function(){this._bIsPainted&&d.call(this,a)},e.prototype.isPainted=function(){return this._bIsPainted},e.prototype.clear=function(){this._oContext.clearRect(0,0,this._elCanvas.width,this._elCanvas.height),this._bIsPainted=!1},e.prototype.round=function(a){return a?Math.floor(1e3*a)/1e3:a},e}():function(){var a=function(a,b){this._el=a,this._htOption=b};return a.prototype.draw=function(a){for(var b=this._htOption,c=this._el,d=a.getModuleCount(),e=Math.floor(b.width/d),f=Math.floor(b.height/d),g=['<table style="border:0;border-collapse:collapse;">'],h=0;d>h;h++){g.push("<tr>");for(var i=0;d>i;i++)g.push('<td style="border:0;border-collapse:collapse;padding:0;margin:0;width:'+e+"px;height:"+f+"px;background-color:"+(a.isDark(h,i)?b.colorDark:b.colorLight)+';"></td>');g.push("</tr>")}g.push("</table>"),c.innerHTML=g.join("");var j=c.childNodes[0],k=(b.width-j.offsetWidth)/2,l=(b.height-j.offsetHeight)/2;k>0&&l>0&&(j.style.margin=l+"px "+k+"px")},a.prototype.clear=function(){this._el.innerHTML=""},a}();QRCode=function(a,b){if(this._htOption={width:256,height:256,typeNumber:4,colorDark:"#000000",colorLight:"#ffffff",correctLevel:d.H},"string"==typeof b&&(b={text:b}),b)for(var c in b)this._htOption[c]=b[c];"string"==typeof a&&(a=document.getElementById(a)),this._android=n(),this._el=a,this._oQRCode=null,this._oDrawing=new q(this._el,this._htOption),this._htOption.text&&this.makeCode(this._htOption.text)},QRCode.prototype.makeCode=function(a){this._oQRCode=new b(r(a,this._htOption.correctLevel),this._htOption.correctLevel),this._oQRCode.addData(a),this._oQRCode.make(),this._el.title=a,this._oDrawing.draw(this._oQRCode),this.makeImage()},QRCode.prototype.makeImage=function(){"function"==typeof this._oDrawing.makeImage&&(!this._android||this._android>=3)&&this._oDrawing.makeImage()},QRCode.prototype.clear=function(){this._oDrawing.clear()},QRCode.CorrectLevel=d}();
+</script>
+<style>
+:root{
+  --green:#1D9E75;--green-light:#E1F5EE;--green-dark:#085041;
+  --amber:#BA7517;--amber-light:#FAEEDA;--amber-dark:#633806;
+  --red:#A32D2D;--red-light:#FCEBEB;
+  --blue:#185FA5;--blue-light:#E6F1FB;
+  --purple:#534AB7;--purple-light:#EEEDFE;
+  --gray:#5F5E5A;--gray-light:#F1EFE8;--gray-border:#D3D1C7;
+  --text:#2C2C2A;--text-muted:#888780;
+  --white:#fff;--bg:#f7f6f2;--radius:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+.header{background:var(--green-dark);color:#fff;padding:14px 18px;display:flex;align-items:center;gap:12px;}
+.header-icon{width:38px;height:38px;background:rgba(255,255,255,0.15);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.header h1{font-size:17px;font-weight:600;}
+.header p{font-size:11px;opacity:.75;margin-top:2px;}
+.header-right{margin-left:auto;text-align:right;font-size:11px;opacity:.8;flex-shrink:0;}
+#live-clock{font-size:15px;font-weight:600;}
+
+/* SECTION SELECTOR BAR */
+.section-bar{background:var(--white);border-bottom:1.5px solid var(--gray-border);padding:10px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.section-bar label{font-size:12px;font-weight:600;color:var(--text-muted);white-space:nowrap;}
+.section-bar select{flex:1;min-width:180px;max-width:300px;padding:7px 10px;border:1.5px solid var(--green);border-radius:8px;font-size:13px;font-weight:600;color:var(--green-dark);background:var(--green-light);cursor:pointer;}
+.section-pill{font-size:11px;font-weight:700;background:var(--green);color:#fff;border-radius:20px;padding:3px 10px;white-space:nowrap;}
+
+.tabs{display:flex;background:var(--white);border-bottom:1.5px solid var(--gray-border);overflow-x:auto;}
+.tab{flex:1;min-width:60px;padding:10px 5px;text-align:center;font-size:12px;font-weight:500;color:var(--text-muted);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;}
+.tab.active{color:var(--green);border-bottom-color:var(--green);}
+.tab:hover:not(.active){background:var(--gray-light);}
+
+.panel{display:none;padding:14px;max-width:720px;margin:0 auto;}
+.panel.active{display:block;}
+
+.card{background:var(--white);border-radius:var(--radius);border:1px solid var(--gray-border);padding:14px;margin-bottom:12px;}
+.card-title{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px;}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;}
+.stat{background:var(--white);border-radius:var(--radius);border:1px solid var(--gray-border);padding:10px;text-align:center;}
+.stat-num{font-size:22px;font-weight:700;}
+.stat-label{font-size:11px;color:var(--text-muted);margin-top:2px;}
+.stat.present .stat-num{color:var(--green);}
+.stat.absent .stat-num{color:var(--red);}
+.stat.late .stat-num{color:var(--amber);}
+
+.student-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:8px;}
+.student-btn{border:1.5px solid var(--gray-border);border-radius:8px;padding:10px 8px;text-align:center;cursor:pointer;background:var(--white);transition:all .15s;position:relative;}
+.student-btn:hover{border-color:var(--green);}
+.student-btn .sname{font-size:12px;font-weight:600;line-height:1.3;}
+.student-btn .sparent{font-size:10px;color:var(--text-muted);margin-top:2px;}
+.student-btn .sstatus{font-size:11px;margin-top:4px;color:var(--text-muted);}
+.student-btn.present{border-color:var(--green);background:var(--green-light);}
+.student-btn.present .sstatus{color:var(--green-dark);font-weight:600;}
+.student-btn.absent{border-color:#F09595;background:var(--red-light);}
+.student-btn.absent .sstatus{color:var(--red);font-weight:600;}
+.student-btn.late{border-color:#FAC775;background:var(--amber-light);}
+.student-btn.late .sstatus{color:var(--amber-dark);font-weight:600;}
+.student-btn .badge{position:absolute;top:5px;right:7px;font-size:13px;}
+
+.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;border:none;transition:all .15s;}
+.btn-green{background:var(--green);color:#fff;}.btn-green:hover{background:var(--green-dark);}
+.btn-outline{background:transparent;color:var(--text);border:1.5px solid var(--gray-border);}.btn-outline:hover{background:var(--gray-light);}
+.btn-red{background:var(--red-light);color:var(--red);border:1.5px solid #F09595;}
+.btn-blue{background:var(--blue-light);color:var(--blue);border:1.5px solid #85B7EB;}
+.btn-amber{background:var(--amber-light);color:var(--amber-dark);border:1.5px solid #FAC775;}
+.btn-purple{background:var(--purple-light);color:var(--purple);border:1.5px solid #AFA9EC;}
+.btn-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;}
+
+input[type=text],input[type=search],input[type=tel],select,textarea{width:100%;padding:8px 11px;border:1.5px solid var(--gray-border);border-radius:8px;font-size:13px;font-family:inherit;color:var(--text);background:var(--white);}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green);}
+label{font-size:11px;font-weight:600;color:var(--text-muted);display:block;margin-bottom:3px;margin-top:10px;}
+textarea{resize:vertical;min-height:70px;}
+
+.roster-table{width:100%;border-collapse:collapse;font-size:12px;}
+.roster-table th{text-align:left;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;padding:7px 8px;border-bottom:1.5px solid var(--gray-border);background:var(--gray-light);}
+.roster-table td{padding:8px;border-bottom:1px solid var(--gray-border);vertical-align:middle;}
+.roster-table tr:last-child td{border-bottom:none;}
+.roster-table tr:hover td{background:var(--gray-light);}
+
+.pill{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;display:inline-block;}
+.num-badge{display:inline-block;background:var(--green-light);color:var(--green-dark);border-radius:20px;font-size:11px;font-weight:700;padding:1px 8px;margin-left:6px;}
+
+#qr-display{display:flex;justify-content:center;padding:14px 0;}
+#qr-display canvas,#qr-display img{border-radius:8px;border:6px solid #fff;box-shadow:0 2px 12px rgba(0,0,0,.1);}
+.qr-url-box{background:var(--gray-light);border-radius:8px;padding:9px 12px;font-size:11px;word-break:break-all;color:var(--gray);margin-top:6px;border:1px solid var(--gray-border);}
+
+.msg-item{border:1px solid var(--gray-border);border-radius:8px;padding:11px;margin-bottom:8px;background:var(--white);}
+.msg-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;gap:8px;flex-wrap:wrap;}
+.msg-name{font-size:13px;font-weight:600;}
+.msg-meta{font-size:11px;color:var(--text-muted);}
+.msg-status-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;}
+.badge-present{background:var(--green-light);color:var(--green-dark);}
+.badge-absent{background:var(--red-light);color:var(--red);}
+.badge-late{background:var(--amber-light);color:var(--amber-dark);}
+.msg-text{font-size:12px;color:var(--text-muted);background:var(--bg);border-radius:6px;padding:8px 10px;margin-bottom:6px;line-height:1.6;}
+.msg-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.viber-btn{background:#7360F2;color:#fff;border:none;border-radius:7px;padding:6px 12px;font-size:12px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:4px;text-decoration:none;}
+.viber-btn:hover{background:#5a49d6;}
+.sms-btn{background:#1a8a1a;color:#fff;border:none;border-radius:7px;padding:6px 12px;font-size:12px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:4px;text-decoration:none;}
+.sms-btn:hover{background:#146614;}
+
+.log-table{width:100%;border-collapse:collapse;font-size:12px;}
+.log-table th{text-align:left;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;padding:7px 8px;border-bottom:1.5px solid var(--gray-border);background:var(--gray-light);}
+.log-table td{padding:8px;border-bottom:1px solid var(--gray-border);}
+.log-table tr:last-child td{border-bottom:none;}
+
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--white);border-radius:var(--radius);padding:18px;width:92%;max-width:360px;}
+.modal h3{font-size:15px;margin-bottom:6px;}
+.modal p{font-size:12px;color:var(--text-muted);margin-bottom:12px;}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:12px;}
+
+.csv-hint{background:var(--blue-light);border:1px solid #85B7EB;border-radius:8px;padding:10px 12px;font-size:12px;color:var(--blue);margin-bottom:10px;line-height:1.6;}
+.csv-hint code{background:rgba(24,95,165,.1);padding:1px 5px;border-radius:4px;font-family:monospace;}
+
+/* Section summary cards */
+.section-summary{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:14px;}
+.sec-card{background:var(--white);border:1.5px solid var(--gray-border);border-radius:var(--radius);padding:10px 12px;cursor:pointer;transition:all .15s;}
+.sec-card:hover{border-color:var(--green);}
+.sec-card.active-sec{border-color:var(--green);background:var(--green-light);}
+.sec-card-name{font-size:12px;font-weight:700;color:var(--text);}
+.sec-card-stats{font-size:11px;color:var(--text-muted);margin-top:4px;}
+
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--green-dark);color:#fff;padding:9px 18px;border-radius:8px;font-size:12px;display:none;z-index:200;box-shadow:0 2px 10px rgba(0,0,0,.2);white-space:nowrap;}
+.empty{text-align:center;padding:36px 20px;color:var(--text-muted);font-size:13px;}
+.empty-icon{font-size:36px;margin-bottom:10px;}
+
+@media(max-width:480px){
+  .stats{grid-template-columns:repeat(2,1fr);}
+  .student-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));}
+  .section-summary{grid-template-columns:repeat(2,1fr);}
+}
+</style>
+</head>
+<body>
+
+<!-- UPDATE BANNER -->
+<div id="update-banner" style="display:none;background:var(--blue);color:#fff;padding:10px 16px;text-align:center;font-size:13px;font-weight:500;position:relative;z-index:50;">
+  <span id="update-banner-text">🆕 New version available!</span>
+  <button onclick="installUpdate()" style="margin-left:12px;background:#fff;color:var(--blue);border:none;border-radius:6px;padding:5px 14px;font-size:12px;font-weight:700;cursor:pointer;">⬇ Install Update</button>
+  <button onclick="dismissUpdate()" style="margin-left:8px;background:transparent;color:rgba(255,255,255,.7);border:none;font-size:16px;cursor:pointer;padding:0 4px;">✕</button>
+</div>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-icon">📋</div>
+  <div>
+    <h1>Class Attendance System</h1>
+    <p id="header-sub">Select a section to begin</p>
+  </div>
+  <div class="header-right">
+    <div id="live-clock">--:--</div>
+    <div id="header-date" style="font-size:10px;margin-top:1px;"></div>
+  </div>
+</div>
+
+<!-- SECTION SELECTOR BAR -->
+<div class="section-bar">
+  <label>📚 Section:</label>
+  <select id="section-select" onchange="switchSection()">
+    <option value="">— Select Section —</option>
+  </select>
+  <span class="section-pill" id="section-count-pill">0 students</span>
+  <span class="section-pill" id="section-schedule-pill" style="background:var(--blue);display:none;">—</span>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('attendance')">📋 Attendance</div>
+  <div class="tab" onclick="switchTab('roster')">👥 Roster</div>
+  <div class="tab" onclick="switchTab('messages')">💬 Messages</div>
+  <div class="tab" onclick="switchTab('log')">📊 Log</div>
+  <div class="tab" onclick="switchTab('overview')">🏫 Overview</div>
+  <div class="tab" onclick="switchTab('qr')">📱 QR</div>
+  <div class="tab" onclick="switchTab('setup')">⚙️ Setup</div>
+</div>
+
+<!-- ══ ATTENDANCE ══ -->
+<div class="panel active" id="panel-attendance">
+
+  <!-- Date selector bar -->
+  <div style="background:var(--white);border:1.5px solid var(--gray-border);border-radius:var(--radius);padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+    <div style="font-size:12px;font-weight:600;color:var(--text-muted);">📅 Date:</div>
+    <input type="date" id="attendance-date" onchange="onAttendanceDateChange()" style="flex:1;min-width:160px;padding:7px 10px;font-size:13px;font-weight:600;border:1.5px solid var(--green);border-radius:8px;color:var(--green-dark);background:var(--green-light);"/>
+    <button class="btn btn-outline" style="padding:6px 12px;font-size:12px;" onclick="setAttendanceDateToday()">📅 Today</button>
+    <span id="date-mode-badge" style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:var(--green);color:#fff;">TODAY</span>
+  </div>
+
+  <div class="stats">
+    <div class="stat present"><div class="stat-num" id="cnt-present">0</div><div class="stat-label">Present</div></div>
+    <div class="stat absent"><div class="stat-num" id="cnt-absent">0</div><div class="stat-label">Absent</div></div>
+    <div class="stat late"><div class="stat-num" id="cnt-late">0</div><div class="stat-label">Late</div></div>
+    <div class="stat"><div class="stat-num" id="cnt-total">0</div><div class="stat-label">Total</div></div>
+  </div>
+  <div class="btn-row" style="margin-bottom:10px;">
+    <button class="btn btn-green" onclick="markAll('present')">✔ All Present</button>
+    <button class="btn btn-red" onclick="markAll('absent')">✘ All Absent</button>
+    <button class="btn btn-outline" onclick="resetAll()">↺ Reset</button>
+  </div>
+  <input type="search" id="search-student" placeholder="Search student…" oninput="renderStudents()" style="margin-bottom:10px;"/>
+  <div class="student-grid" id="student-grid">
+    <div class="empty"><div class="empty-icon">📚</div>Select a section above to begin.</div>
+  </div>
+</div>
+
+<!-- ══ ROSTER ══ -->
+<div class="panel" id="panel-roster">
+  <div class="card">
+    <div class="card-title">Add student manually</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <div><label>Student full name *</label><input type="text" id="add-name" placeholder="e.g. Santos, Juan M."/></div>
+      <div><label>Parent / Guardian name *</label><input type="text" id="add-parent" placeholder="e.g. Maria Santos"/></div>
+      <div><label>Viber / Phone number *</label><input type="tel" id="add-phone" placeholder="e.g. 09171234567"/></div>
+      <div><label>Gender *</label>
+        <select id="add-gender"><option value="male">Male</option><option value="female">Female</option></select>
+      </div>
+      <div><label>Section *</label>
+        <select id="add-section"></select>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-green" onclick="addStudentManual()">＋ Add Student</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Upload class list via CSV</div>
+    <div class="csv-hint" style="background:var(--red-light);border-color:#F09595;color:var(--red);">
+      ⚠️ <strong>IMPORTANT — if names have a comma inside them</strong> (e.g. <code>SANTOS , JUAN M.</code>), Excel must wrap that cell in quotes when saving, or the columns will shift!
+    </div>
+    <div class="csv-hint">
+      CSV columns (in order):<br>
+      <code>Student Name</code> , <code>Parent Name</code> , <code>Phone Number</code> , <code>Section</code> , <code>Gender</code><br><br>
+      Correct example: <code>"Santos, Juan M.","Reyes, Maria",09171234567,Section 1,male</code><br>
+      First row (header) is skipped automatically.
+    </div>
+    <div style="background:var(--blue-light);border:1px solid #85B7EB;border-radius:8px;padding:10px 12px;font-size:12px;color:var(--blue);margin-bottom:10px;line-height:1.7;">
+      <strong>💡 Easiest fix:</strong> Use the <strong>Download CSV Template</strong> button below — it's already formatted correctly with quotes. Just open it in Excel and replace the sample names with yours, keeping the same comma-inside-quotes style.
+    </div>
+    <input type="file" id="file-upload" accept=".csv,.txt" onchange="uploadCSV(event)"/>
+    <div class="btn-row">
+      <button class="btn btn-purple" onclick="downloadTemplate()">⬇ Download CSV Template</button>
+    </div>
+  </div>
+
+  <div class="card" style="overflow-x:auto;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+      <div class="card-title" style="margin-bottom:0;">Student roster <span class="num-badge" id="roster-count">0</span></div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-blue" onclick="exportRosterCSV()">⬇ Export</button>
+        <button class="btn btn-red" onclick="clearRoster()">🗑 Clear All</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+      <select id="filter-section-roster" onchange="renderRoster()" style="flex:1;min-width:140px;">
+        <option value="">All Sections</option>
+      </select>
+      <input type="search" id="search-roster" placeholder="Search name…" oninput="renderRoster()" style="flex:2;min-width:140px;"/>
+    </div>
+    <table class="roster-table">
+      <thead><tr><th>#</th><th>Student Name</th><th>Section</th><th>Parent</th><th>Phone</th><th>Action</th></tr></thead>
+      <tbody id="roster-body"><tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px;">No students yet.</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══ MESSAGES ══ -->
+<div class="panel" id="panel-messages">
+
+  <!-- SMS Mode toggle -->
+  <div class="card" style="padding:10px 14px;">
+    <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">📤 SMS Send Mode</div>
+    <div style="display:flex;gap:0;border:1.5px solid var(--gray-border);border-radius:8px;overflow:hidden;">
+      <button id="sms-mode-prepaid" onclick="setSmsMode('prepaid')" style="flex:1;padding:9px 8px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:var(--green);color:#fff;">📱 Prepaid (My Load)</button>
+      <button id="sms-mode-semaphore" onclick="setSmsMode('semaphore')" style="flex:1;padding:9px 8px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:var(--gray-light);color:var(--text-muted);">📡 Semaphore (API)</button>
+    </div>
+    <div id="sms-mode-hint" style="font-size:11px;color:var(--text-muted);margin-top:6px;line-height:1.6;">📱 <strong>Prepaid:</strong> Opens your phone's SMS app — sends from your own SIM. Uses your load (~₱1/SMS).</div>
+  </div>
+
+  <!-- Parent message template -->
+  <div class="card">
+    <div class="card-title">👨‍👩‍👧 Parent message template</div>
+    <p style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">Variables: {name} {status} {parent} {date} {time} {class} {section} {schedule}</p>
+    <textarea id="msg-template" rows="4" oninput="saveTemplates()">Good day po! This is Ma'am Garcia, Math 10 Teacher of {section}. Ma'am/Sir {parent}, si {name} ay naka-mark na {status} ngayon, {date} ng {time}. Salamat po!</textarea>
+  </div>
+
+  <!-- Adviser summary template -->
+  <div class="card" style="border-color:#85B7EB;background:var(--blue-light);">
+    <div class="card-title" style="color:var(--blue);">👨‍🏫 Adviser summary template</div>
+    <p style="font-size:11px;color:var(--blue);margin-bottom:8px;">Sent ONCE per section to the adviser — a summary, not one per student. Variables: {class} {section} {schedule} {date} {time} {present} {late} {absent} {absentnames} {latenames}</p>
+    <textarea id="msg-template-adviser" rows="4" oninput="saveTemplates()">Good day po! This is Ma'am Garcia. In Math 10 {section} today, {date} {time}: {present} Present, {absent} Absent, {late} Late.{absentnames}{latenames} Thank you po!</textarea>
+    <p style="font-size:11px;color:var(--blue);margin-top:6px;">💡 {absentnames} and {latenames} auto-show only if there are any absences/lates. Leave them in the template.</p>
+  </div>
+
+  <!-- Emergency Broadcast -->
+  <div class="card" style="border-color:#A32D2D;background:var(--red-light);">
+    <div class="card-title" style="color:var(--red);">🚨 Emergency Broadcast</div>
+    <p style="font-size:11px;color:var(--red);margin-bottom:10px;">Send one message to ALL parents instantly — for early dismissal, class suspension, or urgent announcements.</p>
+
+    <!-- Quick templates -->
+    <div style="font-size:11px;font-weight:600;color:var(--red);margin-bottom:6px;">Quick templates:</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+      <button class="btn" style="background:#fff;color:var(--red);border:1.5px solid #F09595;font-size:11px;padding:5px 10px;" onclick="setEmergencyTemplate('early')">🕐 Early Dismissal</button>
+      <button class="btn" style="background:#fff;color:var(--red);border:1.5px solid #F09595;font-size:11px;padding:5px 10px;" onclick="setEmergencyTemplate('suspension')">🚫 Class Suspension</button>
+      <button class="btn" style="background:#fff;color:var(--red);border:1.5px solid #F09595;font-size:11px;padding:5px 10px;" onclick="setEmergencyTemplate('earthquake')">🌍 Earthquake</button>
+      <button class="btn" style="background:#fff;color:var(--red);border:1.5px solid #F09595;font-size:11px;padding:5px 10px;" onclick="setEmergencyTemplate('flood')">🌊 Flood/Weather</button>
+    </div>
+
+    <!-- Message box -->
+    <label style="color:var(--red);">Your announcement message:</label>
+    <textarea id="emergency-msg" rows="4" oninput="saveTemplates()" style="border-color:#F09595;margin-bottom:10px;" placeholder="Type your emergency message here...">Good day po! This is Ma'am Garcia, Math 10 Teacher. Please be informed that classes are suspended today due to unavoidable circumstances. Please fetch your child immediately. Stay safe po!</textarea>
+
+    <!-- Section selector -->
+    <label style="color:var(--red);">Send to which sections:</label>
+    <div id="emergency-section-checkboxes" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;margin-top:6px;"></div>
+
+    <!-- Recipient count -->
+    <div id="emergency-count" style="font-size:12px;color:var(--red);margin-bottom:10px;font-weight:600;"></div>
+
+    <!-- Send buttons -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <button class="btn" style="background:var(--red);color:#fff;justify-content:center;font-size:13px;" onclick="sendEmergencySemaphore()">📡 Send ALL via Semaphore</button>
+      <button class="btn" style="background:#c0392b;color:#fff;justify-content:center;font-size:13px;" onclick="sendEmergencyPrepaid()">📱 Send ALL via Prepaid</button>
+    </div>
+    <p style="font-size:11px;color:var(--red);margin-top:8px;">📡 Semaphore = fully automatic, sends in background.<br>📱 Prepaid = opens SMS app per parent, tap Send each time.</p>
+  </div>
+
+  <!-- Action buttons -->
+  <div class="card" style="background:var(--amber-light);border-color:#FAC775;">
+    <div class="card-title" style="color:var(--amber-dark);margin-bottom:8px;">⚡ Send Notifications</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <button class="btn btn-green" style="justify-content:center;" onclick="generateMessages()">🔄 Generate</button>
+      <button class="btn btn-blue" style="justify-content:center;" onclick="copyAllMessages()">📋 Copy All</button>
+      <button class="btn" style="background:#1a8a1a;color:#fff;justify-content:center;" onclick="notifyAllParents()">📩 Notify Parents (Absent/Late)</button>
+      <button class="btn" style="background:var(--purple);color:#fff;justify-content:center;" onclick="sendAdviserSummary()">👨‍🏫 Send Summary to Current Section's Adviser</button>
+      <button class="btn btn-outline" style="justify-content:center;grid-column:span 2;" onclick="markAllAsSent()">✔ Mark All Absent/Late as Already Sent</button>
+    </div>
+    <div style="font-size:11px;color:var(--amber-dark);margin-top:8px;" id="notify-count">Generate messages first.</div>
+  </div>
+
+  <!-- Filter tabs -->
+  <div style="display:flex;gap:7px;margin-bottom:10px;flex-wrap:wrap;">
+    <button class="btn btn-outline" onclick="filterMessages('all')" id="mf-all" style="border-color:var(--green);color:var(--green);">All</button>
+    <button class="btn btn-outline" onclick="filterMessages('present')" id="mf-present">✔ Present</button>
+    <button class="btn btn-outline" onclick="filterMessages('late')" id="mf-late">⏰ Late</button>
+    <button class="btn btn-outline" onclick="filterMessages('absent')" id="mf-absent">✘ Absent</button>
+  </div>
+
+  <div id="messages-list"><div class="empty"><div class="empty-icon">💬</div>Mark attendance first, then tap Generate.</div></div>
+</div>
+
+<!-- ══ LOG ══ -->
+<div class="panel" id="panel-log">
+  <div class="card">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">
+      <select id="filter-log-section" onchange="renderLog()" style="flex:1;min-width:150px;">
+        <option value="">All Sections</option>
+      </select>
+      <input type="date" id="filter-log-date" onchange="renderLog()" style="flex:1;min-width:140px;"/>
+    </div>
+    <div class="btn-row" style="margin-top:0;">
+      <button class="btn btn-green" onclick="exportCSV()">⬇ Export CSV</button>
+      <button class="btn btn-blue" onclick="exportSF2Json()">📋 Export for SF2</button>
+      <button class="btn btn-outline" onclick="window.print()">🖨 Print</button>
+      <button class="btn btn-amber" onclick="clearFilteredLog()">🗑 Clear Filtered</button>
+      <button class="btn btn-red" onclick="clearLog()">🗑 Clear All</button>
+    </div>
+    <div style="background:var(--amber-light);border:1px solid #FAC775;border-radius:8px;padding:9px 12px;font-size:12px;color:var(--amber-dark);margin-top:10px;line-height:1.7;">
+      💡 <strong>Selective clear:</strong> Use the Section and Date filters above, then click <strong>🗑 Clear Filtered</strong> to delete only those specific records — without affecting other dates or sections.
+    </div>
+    <div style="background:var(--blue-light);border:1px solid #85B7EB;border-radius:8px;padding:10px 12px;font-size:12px;color:var(--blue);margin-top:8px;line-height:1.8;">
+      <strong>📋 How to push marks to your SF2 Excel file:</strong><br>
+      1. Click <strong>Export for SF2</strong> → saves <code>attendance_sf2.json</code><br>
+      2. Place it in the same folder as <code>sf2_export.py</code> and your SF2 template<br>
+      3. Run in terminal: <code>python3 sf2_export.py attendance_sf2.json</code><br>
+      4. A new SF2 file is saved with <strong>x</strong> (Absent) and <strong>h</strong> (Late) filled in ✔
+    </div>
+  </div>
+  <div class="card" style="overflow-x:auto;">
+    <table class="log-table">
+      <thead><tr><th>Name</th><th>Section</th><th>Status</th><th>Date</th><th>Time</th></tr></thead>
+      <tbody id="log-body"><tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:24px;">No records yet.</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══ OVERVIEW ══ -->
+<div class="panel" id="panel-overview">
+
+  <!-- Today's Summary (existing) -->
+  <div class="card">
+    <div class="card-title">📅 All sections — today's summary</div>
+    <div class="section-summary" id="section-overview"></div>
+  </div>
+  <div class="card" style="overflow-x:auto;">
+    <table class="log-table" id="overview-table">
+      <thead><tr><th>Section</th><th>Total</th><th>Present</th><th>Late</th><th>Absent</th><th>Not Marked</th></tr></thead>
+      <tbody id="overview-body"></tbody>
+    </table>
+  </div>
+
+  <!-- Monthly Summary (new) -->
+  <div class="card" style="margin-top:4px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+      <div class="card-title" style="margin-bottom:0;">📊 Monthly summary</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <select id="monthly-month" onchange="renderMonthlyOverview()" style="padding:6px 10px;font-size:12px;border-radius:8px;border:1.5px solid var(--gray-border);">
+        </select>
+        <select id="monthly-section" onchange="renderMonthlyOverview()" style="padding:6px 10px;font-size:12px;border-radius:8px;border:1.5px solid var(--gray-border);">
+          <option value="">All Sections</option>
+        </select>
+        <button class="btn btn-outline" style="padding:6px 12px;font-size:12px;" onclick="exportMonthlyCSV()">⬇ Export</button>
+      </div>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="log-table" id="monthly-overview-table">
+        <thead>
+          <tr>
+            <th>Student</th>
+            <th>Section</th>
+            <th style="color:var(--green);">Present</th>
+            <th style="color:var(--amber-dark);">Late</th>
+            <th style="color:var(--red);">Absent</th>
+            <th>Total Days</th>
+            <th>Attendance %</th>
+          </tr>
+        </thead>
+        <tbody id="monthly-overview-body">
+          <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:24px;">Select a month above to view summary.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══ QR ══ -->
+<div class="panel" id="panel-qr">
+  <div class="card" style="text-align:center;">
+    <div class="card-title">Attendance QR Code</div>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">Print and post in your classroom. Scan it to open this attendance app instantly.</p>
+    <div id="qr-display"><div style="padding:28px;color:var(--text-muted);">Generating…</div></div>
+    <div class="qr-url-box" id="qr-url-label">—</div>
+    <div class="btn-row" style="justify-content:center;margin-top:10px;">
+      <button class="btn btn-green" onclick="downloadQR()">⬇ Download</button>
+      <button class="btn btn-outline" onclick="printQR()">🖨 Print QR</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SETUP ══ -->
+<div class="panel" id="panel-setup">
+  <div class="card">
+    <div class="card-title">Class information</div>
+    <label>Subject / Class Name</label>
+    <input type="text" id="setup-class" placeholder="e.g. Mathematics 10" oninput="saveSettings()"/>
+    <label>Teacher name</label>
+    <input type="text" id="setup-teacher" placeholder="e.g. Mrs. C.V. Garcia" oninput="saveSettings()"/>
+    <label>School Year</label>
+    <input type="text" id="setup-sy" placeholder="e.g. 2025–2026" oninput="saveSettings()"/>
+    <label>Custom QR URL (optional)</label>
+    <input type="text" id="setup-url" placeholder="https://yoursite.com/attendance.html" oninput="saveSettings()"/>
+    <div class="btn-row"><button class="btn btn-green" onclick="regenerateQR()">🔄 Regenerate QR</button></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">My sections</div>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">Add only the sections you handle. For each, set the schedule and adviser contact — used in parent &amp; adviser SMS notifications.</p>
+    <div id="section-name-inputs" style="display:flex;flex-direction:column;gap:12px;margin-bottom:10px;"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-green" onclick="addNewSection()">＋ Add Section</button>
+      <button class="btn btn-green" onclick="saveSectionNames()">💾 Save Sections</button>
+    </div>
+  </div>
+
+  <div class="card" style="border-color:#AFA9EC;background:var(--purple-light);">
+    <div class="card-title" style="color:var(--purple);">📲 Backup & Sync (Phone ↔ Laptop)</div>
+    <p style="font-size:12px;color:var(--purple);margin-bottom:10px;">Export all data from one device and import on another to keep them in sync.</p>
+    <div class="btn-row" style="margin-top:0;">
+      <button class="btn btn-purple" onclick="exportBackup()">⬇ Export Full Backup</button>
+      <button class="btn btn-outline" onclick="document.getElementById('import-backup-file').click()">⬆ Import Backup</button>
+    </div>
+    <input type="file" id="import-backup-file" accept=".json" style="display:none;" onchange="importBackup(event)"/>
+    <p style="font-size:11px;color:var(--purple);margin-top:8px;line-height:1.6;">
+      <strong>How to sync phone ↔ laptop:</strong><br>
+      1. On Device A → Export Full Backup → send file via Viber/email to Device B<br>
+      2. On Device B → Import Backup → all students, attendance &amp; logs restored ✔
+    </p>
+  </div>
+
+  <div class="card" style="border-color:#FAC775;background:var(--amber-light);">
+    <div class="card-title" style="color:var(--amber-dark);">📡 Semaphore Auto-SMS</div>
+    <p style="font-size:12px;color:var(--amber-dark);margin-bottom:10px;">SMS sent automatically for <strong>Late and Absent only</strong> — Present is skipped to save credits. Requires mobile data or WiFi.</p>
+    <label style="color:var(--amber-dark);">Semaphore API Key</label>
+    <input type="text" id="setup-apikey" placeholder="Paste your Semaphore API key here" oninput="saveSettings()" style="font-family:monospace;font-size:11px;"/>
+    <label style="color:var(--amber-dark);">Sender Name (max 11 chars)</label>
+    <input type="text" id="setup-sender" placeholder="e.g. DRANHScvg" maxlength="11" oninput="saveSettings()"/>
+    <label style="color:var(--amber-dark);">Your personal number (for replies)</label>
+    <input type="tel" id="setup-replynum" placeholder="e.g. 09367369408" oninput="saveSettings()"/>
+    <p style="font-size:11px;color:var(--amber-dark);margin-top:4px;line-height:1.6;">📌 This number is added at the end of every Semaphore message so parents know where to reply. Example: <em>"...Salamat po! Reply/concerns: 09226045382"</em></p>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:12px;">
+      <input type="checkbox" id="setup-autosms" onchange="saveSettings()" style="width:18px;height:18px;accent-color:var(--green);"/>
+      <label style="margin:0;font-size:13px;font-weight:600;color:var(--amber-dark);cursor:pointer;" for="setup-autosms">Enable Auto-SMS when marking attendance</label>
+    </div>
+    <div id="sms-status-indicator" style="margin-top:8px;font-size:12px;"></div>
+    <label style="color:var(--amber-dark);margin-top:10px;">Your phone number (for test SMS)</label>
+    <input type="tel" id="setup-testphone" placeholder="e.g. 09171234567"/>
+    <div class="btn-row"><button class="btn btn-green" onclick="testSemaphore()">🧪 Send Test SMS</button></div>
+  </div>
+
+  <div class="card" style="border-color:#85B7EB;background:var(--blue-light);">
+    <div class="card-title" style="color:var(--blue);">🔄 App Version</div>
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px;">
+      <div style="font-size:28px;font-weight:800;color:var(--blue);" id="current-version-display">v1.1.0</div>
+      <div id="version-status-badge" style="font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;background:var(--green-light);color:var(--green-dark);">✔ Up to date</div>
+    </div>
+    <div id="update-card-info" style="font-size:12px;color:var(--blue);margin-bottom:10px;display:none;"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-blue" onclick="checkForUpdates(true)">🔍 Check for Updates</button>
+      <button id="install-update-btn" class="btn btn-green" onclick="installUpdate()" style="display:none;">⬇ Install Update</button>
+    </div>
+    <p style="font-size:11px;color:var(--blue);margin-top:8px;line-height:1.6;">Your data (students, attendance, logs) is <strong>never affected</strong> by updates — only the app code is refreshed.</p>
+  </div>
+
+  <div class="card" style="border-color:#F09595;background:var(--red-light);">
+    <div class="card-title" style="color:var(--red);">🗑 Reset App</div>
+    <p style="font-size:12px;color:var(--red);margin-bottom:10px;">If the app is loading incorrectly due to old saved data from a previous version, use this to wipe everything and start fresh.</p>
+    <button class="btn btn-red" onclick="clearAllData()">🗑 Reset to Fresh Start</button>
+  </div>
+</div>
+
+<!-- MODAL: STATUS PICKER -->
+<div class="modal-overlay" id="modal-status">
+  <div class="modal">
+    <h3>Mark <span id="modal-sname" style="color:var(--green-dark);"></span></h3>
+    <p id="modal-parent-info" style="color:var(--text-muted);font-size:12px;"></p>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <button class="btn btn-green" style="width:100%;justify-content:center;font-size:14px;" onclick="setStatus('present')">✔ Present</button>
+      <button class="btn btn-amber" style="width:100%;justify-content:center;font-size:14px;" onclick="setStatus('late')">⏰ Late</button>
+      <button class="btn btn-red" style="width:100%;justify-content:center;font-size:14px;" onclick="setStatus('absent')">✘ Absent</button>
+    </div>
+    <div class="modal-btns"><button class="btn btn-outline" onclick="closeModal('modal-status')">Cancel</button></div>
+  </div>
+</div>
+
+<!-- MODAL: EDIT STUDENT -->
+<div class="modal-overlay" id="modal-edit">
+  <div class="modal">
+    <h3>Edit Student</h3>
+    <input type="hidden" id="edit-index"/>
+    <label>Student full name</label><input type="text" id="edit-name"/>
+    <label>Parent / Guardian name</label><input type="text" id="edit-parent"/>
+    <label>Viber / Phone number</label><input type="tel" id="edit-phone"/>
+    <label>Gender</label><select id="edit-gender"><option value="male">Male</option><option value="female">Female</option></select>
+    <label>Section</label><select id="edit-section"></select>
+    <div class="modal-btns">
+      <button class="btn btn-outline" onclick="closeModal('modal-edit')">Cancel</button>
+      <button class="btn btn-green" onclick="saveEdit()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- WELCOME / HELP MODAL -->
+<div class="modal-overlay open" id="modal-welcome" style="z-index:300;align-items:flex-start;overflow-y:auto;padding:20px 0;">
+  <div style="background:var(--white);border-radius:14px;width:92%;max-width:480px;margin:auto;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.2);">
+    <!-- Header -->
+    <div style="background:var(--green-dark);padding:24px 20px 16px;text-align:center;">
+      <div style="font-size:40px;margin-bottom:8px;">📋</div>
+      <div style="color:#fff;font-size:18px;font-weight:700;">Class Attendance System</div>
+      <div style="color:#fff;font-size:12px;margin-top:4px;">Smart Attendance Management for Teachers</div>
+    </div>
+
+    <!-- First time / returning -->
+    <div style="display:flex;border-bottom:1.5px solid var(--gray-border);">
+      <button id="welcome-tab-new" onclick="welcomeTab('new')"
+        style="flex:1;padding:11px;font-size:13px;font-weight:600;border:none;cursor:pointer;background:var(--green-light);color:var(--green-dark);border-bottom:3px solid var(--green);">
+        🆕 First Time
+      </button>
+      <button id="welcome-tab-help" onclick="welcomeTab('help')"
+        style="flex:1;padding:11px;font-size:13px;font-weight:600;border:none;cursor:pointer;background:var(--white);color:var(--text-muted);border-bottom:3px solid transparent;">
+        📖 How to Use
+      </button>
+      <button id="welcome-tab-tips" onclick="welcomeTab('tips')"
+        style="flex:1;padding:11px;font-size:13px;font-weight:600;border:none;cursor:pointer;background:var(--white);color:var(--text-muted);border-bottom:3px solid transparent;">
+        💡 Tips
+      </button>
+    </div>
+
+    <!-- FIRST TIME TAB -->
+    <div id="welcome-new" style="padding:18px;">
+      <div style="font-size:14px;font-weight:700;color:var(--green-dark);margin-bottom:12px;">👋 Welcome! Here's how to get started:</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;gap:12px;align-items:flex-start;background:var(--gray-light);border-radius:8px;padding:10px 12px;">
+          <div style="background:var(--green);color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">1</div>
+          <div>
+            <div style="font-size:13px;font-weight:600;">⚙️ Setup your class info</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Go to <strong>Setup tab</strong> → enter your Subject, Teacher name, and School Year.</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;background:var(--gray-light);border-radius:8px;padding:10px 12px;">
+          <div style="background:var(--green);color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">2</div>
+          <div>
+            <div style="font-size:13px;font-weight:600;">📚 Add your sections</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">In <strong>Setup → My Sections</strong>, rename Section 1 to your actual section (e.g. Sampaguita). Add more sections if needed.</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;background:var(--gray-light);border-radius:8px;padding:10px 12px;">
+          <div style="background:var(--green);color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">3</div>
+          <div>
+            <div style="font-size:13px;font-weight:600;">👥 Add your students</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Go to <strong>Roster tab</strong> → add students one by one, or upload a CSV file with names, parent contacts, and section.</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;background:var(--gray-light);border-radius:8px;padding:10px 12px;">
+          <div style="background:var(--green);color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">4</div>
+          <div>
+            <div style="font-size:13px;font-weight:600;">📋 Take attendance!</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Go to <strong>Attendance tab</strong> → select your section → tap each student to mark Present, Late, or Absent.</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;background:var(--green-light);border-radius:8px;padding:10px 12px;border:1px solid var(--green);">
+          <div style="font-size:20px;flex-shrink:0;">💡</div>
+          <div style="font-size:12px;color:var(--green-dark);line-height:1.6;">Your attendance data is saved automatically in your browser. SMS features require internet, but all attendance marking and records work anytime.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HOW TO USE TAB -->
+    <div id="welcome-help" style="padding:18px;display:none;">
+      <div style="font-size:14px;font-weight:700;color:var(--green-dark);margin-bottom:12px;">📖 Tab Guide</div>
+      <div style="display:flex;flex-direction:column;gap:8px;font-size:12px;">
+        <div style="background:var(--gray-light);border-radius:8px;padding:10px 12px;">
+          <div style="font-weight:700;">📋 Attendance</div>
+          <div style="color:var(--text-muted);margin-top:3px;">Select a section → tap student cards to mark Present ✔, Late ⏰, or Absent ✘. Has Undo button for mistakes.</div>
+        </div>
+        <div style="background:var(--gray-light);border-radius:8px;padding:10px 12px;">
+          <div style="font-weight:700;">👥 Roster</div>
+          <div style="color:var(--text-muted);margin-top:3px;">Manage your student list. Add names, parent names, phone numbers, gender, and section. Upload via CSV or type manually.</div>
+        </div>
+        <div style="background:var(--gray-light);border-radius:8px;padding:10px 12px;">
+          <div style="font-weight:700;">💬 Messages</div>
+          <div style="color:var(--text-muted);margin-top:3px;">Auto-generates parent messages. Send via 📱 Prepaid SMS (your SIM load) or 💬 Viber. Notify all absent/late at once.</div>
+        </div>
+        <div style="background:var(--gray-light);border-radius:8px;padding:10px 12px;">
+          <div style="font-weight:700;">📊 Log</div>
+          <div style="color:var(--text-muted);margin-top:3px;">Full attendance history. Filter by section or date. Export to CSV or SF2 format for DepEd records.</div>
+        </div>
+        <div style="background:var(--gray-light);border-radius:8px;padding:10px 12px;">
+          <div style="font-weight:700;">🏫 Overview</div>
+          <div style="color:var(--text-muted);margin-top:3px;">See all sections at a glance — how many present, late, absent, and unmarked per section today.</div>
+        </div>
+        <div style="background:var(--gray-light);border-radius:8px;padding:10px 12px;">
+          <div style="font-weight:700;">📱 QR Code</div>
+          <div style="color:var(--text-muted);margin-top:3px;">Print and post in your classroom. Scan it to open the app quickly on your phone.</div>
+        </div>
+        <div style="background:var(--gray-light);border-radius:8px;padding:10px 12px;">
+          <div style="font-weight:700;">⚙️ Setup</div>
+          <div style="color:var(--text-muted);margin-top:3px;">Class info, section names, Semaphore API for auto-SMS, backup/sync between devices, and reset option.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIPS TAB -->
+    <div id="welcome-tips" style="padding:18px;display:none;">
+      <div style="font-size:14px;font-weight:700;color:var(--green-dark);margin-bottom:12px;">💡 Tips & Reminders</div>
+      <div style="display:flex;flex-direction:column;gap:8px;font-size:12px;">
+        <div style="background:var(--amber-light);border:1px solid #FAC775;border-radius:8px;padding:10px 12px;">
+          <div style="font-weight:700;color:var(--amber-dark);">💾 Your data auto-saves</div>
+          <div style="color:var(--amber-dark);margin-top:3px;">No need to click Save — attendance is saved automatically as you tap. But always use Export Backup regularly just in case!</div>
+        </div>
+        <div style="background:var(--blue-light);border:1px solid #85B7EB;border-radius:8px;padding:10px 12px;">
+          <div style="font-weight:700;color:var(--blue);">📲 Sync between phone & laptop</div>
+          <div style="color:var(--blue);margin-top:3px;">Setup → Backup & Sync → Export Full Backup → send via Viber to other device → Import Backup.</div>
+        </div>
+        <div style="background:var(--green-light);border:1px solid var(--green);border-radius:8px;padding:10px 12px;">
+          <div style="font-weight:700;color:var(--green-dark);">↩ Made a mistake?</div>
+          <div style="color:var(--green-dark);margin-top:3px;">After marking a student, a black Undo bar appears at the bottom for 6 seconds. Tap it to reverse the mark before SMS sends.</div>
+        </div>
+        <div style="background:var(--gray-light);border-radius:8px;padding:10px 12px;">
+          <div style="font-weight:700;">📩 SMS options</div>
+          <div style="color:var(--text-muted);margin-top:3px;"><strong>Prepaid:</strong> Free to set up, uses your SIM load (~₱1/SMS). Works offline.<br><strong>Semaphore:</strong> Auto-sends in background, ₱0.50/SMS, needs internet. Only sends for Absent & Late.</div>
+        </div>
+        <div style="background:var(--gray-light);border-radius:8px;padding:10px 12px;">
+          <div style="font-weight:700;">🗂 SF2 Export</div>
+          <div style="color:var(--text-muted);margin-top:3px;">Log tab → Export for SF2 → downloads a JSON file. Run with the sf2_export.py script on your PC to auto-fill your SF2 Excel file.</div>
+        </div>
+        <div style="background:var(--red-light);border:1px solid #F09595;border-radius:8px;padding:10px 12px;">
+          <div style="font-weight:700;color:var(--red);">⚠️ Don't clear browser data</div>
+          <div style="color:var(--red);margin-top:3px;">Your student roster and attendance are stored in Chrome's local storage. Clearing browser data or cache will erase everything. Always export a backup first!</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer buttons -->
+    <div style="padding:14px 18px;border-top:1.5px solid var(--gray-border);display:flex;gap:8px;align-items:center;">
+      <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);cursor:pointer;margin:0;flex:1;">
+        <input type="checkbox" id="welcome-dont-show" style="width:15px;height:15px;accent-color:var(--green);"/>
+        Don't show again
+      </label>
+      <button class="btn btn-green" style="font-size:13px;padding:10px 24px;" onclick="closeWelcome()">Let's Go! 🚀</button>
+    </div>
+  </div>
+</div>
+
+<!-- Help button (always visible) -->
+<div onclick="document.getElementById('modal-welcome').classList.add('open');"
+  style="position:fixed;bottom:22px;right:18px;background:var(--green-dark);color:#fff;border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.25);z-index:150;" title="Help">
+  ?
+</div>
+  <span id="undo-msg">Marked as absent</span>
+  <button onclick="undoLastMark()" style="background:var(--amber);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;">↩ Undo</button>
+</div>
+<!-- MODAL: STUDENT PROFILE -->
+<div class="modal-overlay" id="modal-profile" style="align-items:flex-start;overflow-y:auto;padding:20px 0;">
+  <div class="modal" style="max-width:480px;width:92%;margin:auto;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div>
+        <h3 id="profile-name" style="font-size:15px;color:var(--green-dark);"></h3>
+        <div id="profile-meta" style="font-size:12px;color:var(--text-muted);margin-top:2px;"></div>
+      </div>
+      <button class="btn btn-outline" style="padding:5px 10px;" onclick="closeModal('modal-profile')">✕</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px;" id="profile-stats"></div>
+    <select id="profile-month-filter" onchange="renderProfileRecords()" style="width:100%;margin-bottom:10px;padding:7px;border:1.5px solid var(--gray-border);border-radius:8px;font-size:13px;">
+      <option value="">All Months</option>
+    </select>
+    <div style="overflow-x:auto;max-height:380px;overflow-y:auto;">
+      <table class="log-table" style="width:100%;">
+        <thead><tr><th>Date</th><th>Day</th><th>Status</th><th>Time</th></tr></thead>
+        <tbody id="profile-records"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════
+// DEFAULT SECTION NAMES
+// ══════════════════════════════════════
+const APP_VERSION     = '1.1.2';
+const UPDATE_CHECK_URL = 'https://cristinagarcia1227.github.io/attendance/version.json';
+const DEFAULT_SECTIONS = ['Section 1'];
+
+// ══════════════════════════════════════
+// STATE
+// ══════════════════════════════════════
+let students  = [];          // [{name, parent, phone, section}]
+let attendance = {};         // { "Section|Name": {status,time,smsSent,smsFailed} }
+let settings   = {};
+let log        = [];
+let sectionNames = [...DEFAULT_SECTIONS];
+let sectionInfo  = {}; // { "Section Name": {schedule, adviser, adviserPhone, notifyAdviser} }
+let currentSection = '';
+let msgFilter = 'all';
+let smsMode = 'prepaid'; // 'prepaid' or 'semaphore'
+let allMessages = [];
+let notifyQueue = [], notifyIndex = 0;
+
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+function init() {
+  loadStorage();
+  buildSectionSelectors();
+  buildSectionNameInputs();
+  initAttendanceDatePicker();
+  loadTemplates();
+  renderStudents();
+  renderRoster();
+  updateStats();
+  renderLog();
+  renderOverview();
+  updateClock();
+  setInterval(updateClock, 1000);
+  setTimeout(regenerateQR, 400);
+  initWelcome();
+  // Check for updates silently after 3 seconds
+  setTimeout(() => checkForUpdates(false), 3000);
+}
+
+function loadStorage() {
+  try {
+    students    = JSON.parse(localStorage.getItem('att4_students')    || '[]');
+    attendance  = JSON.parse(localStorage.getItem('att4_attendance')  || '{}');
+    settings    = JSON.parse(localStorage.getItem('att4_settings')    || '{}');
+    log         = JSON.parse(localStorage.getItem('att4_log')         || '[]');
+    const savedSections = localStorage.getItem('att4_sections');
+    sectionNames = savedSections ? JSON.parse(savedSections) : [...DEFAULT_SECTIONS];
+    sectionInfo  = JSON.parse(localStorage.getItem('att4_sectioninfo') || '{}');
+    currentSection = sectionNames[0] || '';
+    const setVal = (id, val) => { const el=document.getElementById(id); if(el&&val) el.value=val; };
+    setVal('setup-class',   settings.class);
+    setVal('setup-teacher', settings.teacher);
+    setVal('setup-sy',      settings.sy);
+    setVal('setup-url',     settings.url);
+    setVal('setup-apikey',  settings.apikey);
+    if (settings.sender && settings.sender !== 'SEMAPHORE') setVal('setup-sender', settings.sender);
+    if (settings.replyNum) setVal('setup-replynum', settings.replyNum);
+    const autoEl = document.getElementById('setup-autosms');
+    if (autoEl && settings.autosms) autoEl.checked = true;
+    const subEl = document.getElementById('header-sub');
+    if (subEl) subEl.textContent = settings.class || 'Select a section to begin';
+    // Restore SMS mode preference
+    const savedMode = localStorage.getItem('att4_sms_mode');
+    if (savedMode) smsMode = savedMode;
+    // Auto-reset attendance marks when a new day starts
+    checkAndResetForNewDay();
+  } catch(e){ console.error('loadStorage error:', e); }
+}
+
+function checkAndResetForNewDay() {
+  // Always use real today's date for this check — not attendanceDate
+  const today    = new Date().toLocaleDateString('en-PH');
+  const lastDate = localStorage.getItem('att4_last_date') || '';
+  if (lastDate !== today) {
+    attendance = {};
+    localStorage.setItem('att4_attendance', JSON.stringify(attendance));
+    localStorage.setItem('att4_last_date', today);
+    if (lastDate) toast('📅 New day (' + today + ') — attendance reset for a fresh start.');
+  }
+}
+
+function save() {
+  localStorage.setItem('att4_students',   JSON.stringify(students));
+  localStorage.setItem('att4_attendance', JSON.stringify(attendance));
+  localStorage.setItem('att4_log',        JSON.stringify(log));
+}
+
+function saveSettings() {
+  settings = {
+    class:    document.getElementById('setup-class').value,
+    teacher:  document.getElementById('setup-teacher').value,
+    sy:       document.getElementById('setup-sy').value,
+    url:      document.getElementById('setup-url').value,
+    apikey:   document.getElementById('setup-apikey').value.trim(),
+    sender:   document.getElementById('setup-sender').value.trim() || 'SEMAPHORE',
+    autosms:  document.getElementById('setup-autosms').checked,
+    replyNum: document.getElementById('setup-replynum') ? document.getElementById('setup-replynum').value.trim() : ''
+  };
+  localStorage.setItem('att4_settings', JSON.stringify(settings));
+  document.getElementById('header-sub').textContent = settings.class || 'Select a section to begin';
+  const ind = document.getElementById('sms-status-indicator');
+  if (ind) {
+    if (settings.autosms && settings.apikey)
+      ind.innerHTML = '<span style="color:var(--green);font-weight:600;">✔ Auto-SMS is ON</span> — Late &amp; Absent only.';
+    else if (settings.autosms && !settings.apikey)
+      ind.innerHTML = '<span style="color:var(--red);font-weight:600;">⚠ API Key missing.</span>';
+    else
+      ind.innerHTML = '<span style="color:var(--text-muted);">Auto-SMS is OFF.</span>';
+  }
+}
+
+function saveTemplates() {
+  const t1 = document.getElementById('msg-template');
+  const t2 = document.getElementById('msg-template-adviser');
+  if (t1) localStorage.setItem('att4_msg_template',     t1.value);
+  if (t2) localStorage.setItem('att4_msg_template_adv', t2.value);
+}
+
+function loadTemplates() {
+  const saved1 = localStorage.getItem('att4_msg_template');
+  const saved2 = localStorage.getItem('att4_msg_template_adv');
+  const t1 = document.getElementById('msg-template');
+  const t2 = document.getElementById('msg-template-adviser');
+  if (t1 && saved1) t1.value = saved1;
+  if (t2 && saved2) t2.value = saved2;
+}
+
+// ══════════════════════════════════════
+// WELCOME SCREEN
+// ══════════════════════════════════════
+function initWelcome() {
+  const dontShow = localStorage.getItem('att4_welcome_seen') === 'true';
+  if (dontShow) {
+    document.getElementById('modal-welcome').classList.remove('open');
+  }
+}
+
+function welcomeTab(tab) {
+  ['new','help','tips'].forEach(t => {
+    document.getElementById('welcome-'+t).style.display = t===tab ? 'block' : 'none';
+    const btn = document.getElementById('welcome-tab-'+t);
+    if (btn) {
+      btn.style.background    = t===tab ? 'var(--green-light)' : 'var(--white)';
+      btn.style.color         = t===tab ? 'var(--green-dark)'  : 'var(--text-muted)';
+      btn.style.borderBottom  = t===tab ? '3px solid var(--green)' : '3px solid transparent';
+    }
+  });
+}
+
+function closeWelcome() {
+  if (document.getElementById('welcome-dont-show').checked) {
+    localStorage.setItem('att4_welcome_seen', 'true');
+  }
+  document.getElementById('modal-welcome').classList.remove('open');
+}
+function buildSectionSelectors() {
+  const sel    = document.getElementById('section-select');
+  const addS   = document.getElementById('add-section');
+  const editS  = document.getElementById('edit-section');
+  const filtR  = document.getElementById('filter-section-roster');
+  const filtL  = document.getElementById('filter-log-section');
+  const filtMo = document.getElementById('monthly-section');
+
+  sel.innerHTML   = '<option value="">— Select Section —</option>';
+  addS.innerHTML  = '';
+  editS.innerHTML = '';
+  filtR.innerHTML = '<option value="">All Sections</option>';
+  filtL.innerHTML = '<option value="">All Sections</option>';
+  if (filtMo) filtMo.innerHTML = '<option value="">All Sections</option>';
+
+  sectionNames.forEach(s => {
+    sel.innerHTML   += `<option value="${s}">${s}</option>`;
+    addS.innerHTML  += `<option value="${s}">${s}</option>`;
+    editS.innerHTML += `<option value="${s}">${s}</option>`;
+    filtR.innerHTML += `<option value="${s}">${s}</option>`;
+    filtL.innerHTML += `<option value="${s}">${s}</option>`;
+    if (filtMo) filtMo.innerHTML += `<option value="${s}">${s}</option>`;
+  });
+
+  if (currentSection) sel.value = currentSection;
+  updateSectionPill();
+}
+
+function buildSectionNameInputs() {
+  const container = document.getElementById('section-name-inputs');
+  container.innerHTML = sectionNames.map((s,i) => {
+    const info = sectionInfo[s] || {};
+    return `<div style="border:1.5px solid var(--gray-border);border-radius:8px;padding:10px;">
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+        <input type="text" id="secname-${i}" value="${s}" placeholder="e.g. Sampaguita" style="flex:1;font-weight:600;" oninput="renameSectionLive(${i})"/>
+        <button class="btn btn-red" style="padding:6px 10px;flex-shrink:0;" onclick="removeSection(${i})" title="Remove section">✕</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div>
+          <label style="margin-top:0;">📅 Schedule / Time</label>
+          <input type="text" id="secsched-${i}" value="${info.schedule||''}" placeholder="e.g. MWF 8:00-9:00 AM"/>
+        </div>
+        <div>
+          <label style="margin-top:0;">👤 Adviser Name</label>
+          <input type="text" id="secadv-${i}" value="${info.adviser||''}" placeholder="e.g. Mr. Dela Cruz"/>
+        </div>
+        <div style="grid-column:span 2;">
+          <label style="margin-top:0;">📱 Adviser Phone / Viber Number</label>
+          <input type="tel" id="secadvphone-${i}" value="${info.adviserPhone||''}" placeholder="e.g. 09171234567"/>
+        </div>
+        <div style="grid-column:span 2;display:flex;align-items:center;gap:8px;margin-top:4px;">
+          <input type="checkbox" id="secadvnotify-${i}" ${info.notifyAdviser?'checked':''} style="width:16px;height:16px;accent-color:var(--green);"/>
+          <label style="margin:0;font-size:12px;font-weight:500;cursor:pointer;" for="secadvnotify-${i}">Also notify adviser when a student is Absent/Late</label>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renameSectionLive(idx) {
+  // no-op placeholder, actual rename happens on Save
+}
+
+function addNewSection() {
+  sectionNames.push('Section ' + (sectionNames.length + 1));
+  buildSectionNameInputs();
+  // focus last input
+  setTimeout(() => {
+    const last = document.getElementById('secname-'+(sectionNames.length-1));
+    if (last) { last.focus(); last.select(); }
+  }, 50);
+}
+
+function removeSection(idx) {
+  const name = sectionNames[idx];
+  const hasStudents = students.some(s => s.section === name);
+  if (hasStudents) {
+    if (!confirm(`"${name}" still has students. Remove section and reassign students to Section 1?`)) return;
+    students = students.map(s => s.section === name ? {...s, section: sectionNames[0] || 'Section 1'} : s);
+  }
+  delete sectionInfo[name];
+  sectionNames.splice(idx, 1);
+  if (!sectionNames.length) sectionNames = ['Section 1'];
+  localStorage.setItem('att4_sections', JSON.stringify(sectionNames));
+  localStorage.setItem('att4_sectioninfo', JSON.stringify(sectionInfo));
+  save();
+  buildSectionSelectors();
+  buildSectionNameInputs();
+  renderStudents(); renderRoster(); renderOverview();
+  toast('Section removed.');
+}
+
+function saveSectionNames() {
+  const old = [...sectionNames];
+  const newSectionInfo = {};
+
+  sectionNames = sectionNames.map((_,i) => {
+    const el = document.getElementById('secname-'+i);
+    const newName = (el ? el.value.trim() : '') || ('Section '+(i+1));
+    // Capture schedule/adviser info for this row, keyed to the NEW name
+    const schedEl     = document.getElementById('secsched-'+i);
+    const advEl       = document.getElementById('secadv-'+i);
+    const advPhoneEl  = document.getElementById('secadvphone-'+i);
+    const advNotifyEl = document.getElementById('secadvnotify-'+i);
+    newSectionInfo[newName] = {
+      schedule:      schedEl ? schedEl.value.trim() : '',
+      adviser:       advEl ? advEl.value.trim() : '',
+      adviserPhone:  advPhoneEl ? advPhoneEl.value.trim() : '',
+      notifyAdviser: advNotifyEl ? advNotifyEl.checked : false
+    };
+    return newName;
+  });
+  sectionInfo = newSectionInfo;
+
+  // Update student records if names changed
+  students = students.map(s => {
+    const idx = old.indexOf(s.section);
+    if (idx >= 0) s.section = sectionNames[idx];
+    return s;
+  });
+  // Update attendance keys
+  const newAtt = {};
+  Object.keys(attendance).forEach(key => {
+    const parts = key.split('|');
+    const secIdx = old.indexOf(parts[0]);
+    const newKey = secIdx >= 0 ? sectionNames[secIdx]+'|'+parts[1] : key;
+    newAtt[newKey] = attendance[key];
+  });
+  attendance = newAtt;
+  if (!sectionNames.includes(currentSection)) currentSection = sectionNames[0];
+  localStorage.setItem('att4_sections', JSON.stringify(sectionNames));
+  localStorage.setItem('att4_sectioninfo', JSON.stringify(sectionInfo));
+  save();
+  buildSectionSelectors();
+  buildSectionNameInputs();
+  renderStudents(); renderRoster(); renderOverview();
+  toast('Sections saved! ' + sectionNames.length + ' section(s) active.');
+}
+
+function switchSection() {
+  currentSection = document.getElementById('section-select').value;
+  updateSectionPill();
+  renderStudents();
+  updateStats();
+}
+
+function updateSectionPill() {
+  const count = students.filter(s => s.section === currentSection).length;
+  document.getElementById('section-count-pill').textContent =
+    currentSection ? count + ' students' : '—';
+  const schedPill = document.getElementById('section-schedule-pill');
+  const info = sectionInfo[currentSection] || {};
+  if (currentSection && info.schedule) {
+    schedPill.textContent = '🕐 ' + info.schedule;
+    schedPill.style.display = 'inline-block';
+  } else {
+    schedPill.style.display = 'none';
+  }
+}
+
+function attKey(section, name) { return section + '|' + name; }
+
+// ══════════════════════════════════════
+// CLOCK
+// ══════════════════════════════════════
+function updateClock() {
+  try {
+    const now = new Date();
+    const clockEl = document.getElementById('live-clock');
+    const dateEl  = document.getElementById('header-date');
+    if (clockEl) clockEl.textContent = now.toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit',hour12:true});
+    if (dateEl)  dateEl.textContent  = now.toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'});
+  } catch(e){}
+}
+
+// ── ATTENDANCE DATE MANAGEMENT ──
+let attendanceDate = null; // null = today
+
+function getDate() {
+  if (!attendanceDate) return new Date().toLocaleDateString('en-PH');
+  const d = new Date(attendanceDate + 'T00:00:00');
+  return d.toLocaleDateString('en-PH');
+}
+
+function getTime() {
+  return new Date().toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit',hour12:true});
+}
+
+function isToday() {
+  if (!attendanceDate) return true;
+  const today = new Date().toDateString();
+  const sel   = new Date(attendanceDate + 'T00:00:00').toDateString();
+  return today === sel;
+}
+
+function initAttendanceDatePicker() {
+  const input = document.getElementById('attendance-date');
+  if (!input) return;
+  const now  = new Date();
+  const yyyy = now.getFullYear();
+  const mm   = String(now.getMonth()+1).padStart(2,'0');
+  const dd   = String(now.getDate()).padStart(2,'0');
+  input.value = `${yyyy}-${mm}-${dd}`;
+  input.max   = `${yyyy}-${mm}-${dd}`;
+  attendanceDate = input.value;
+  updateDateBadge();
+}
+
+function setAttendanceDateToday() {
+  const now  = new Date();
+  const yyyy = now.getFullYear();
+  const mm   = String(now.getMonth()+1).padStart(2,'0');
+  const dd   = String(now.getDate()).padStart(2,'0');
+  const val  = `${yyyy}-${mm}-${dd}`;
+  const input = document.getElementById('attendance-date');
+  if (input) { input.value = val; input.max = val; }
+  attendanceDate = val;
+  // Restore live attendance object from localStorage
+  attendance = JSON.parse(localStorage.getItem('att4_attendance') || '{}');
+  updateDateBadge();
+  renderStudents();
+  updateStats();
+  toast('📅 Back to today — ' + getDate());
+}
+
+function onAttendanceDateChange() {
+  const input = document.getElementById('attendance-date');
+  if (!input || !input.value) return;
+  attendanceDate = input.value;
+  updateDateBadge();
+  if (isToday()) {
+    // Restore live attendance
+    attendance = JSON.parse(localStorage.getItem('att4_attendance') || '{}');
+  } else {
+    // Past date — rebuild attendance from log
+    loadAttendanceForDate();
+  }
+  renderStudents();
+  updateStats();
+  toast('📅 Viewing ' + (isToday() ? 'today' : getDate()));
+}
+
+function updateDateBadge() {
+  const badge = document.getElementById('date-mode-badge');
+  if (!badge) return;
+  if (isToday()) {
+    badge.textContent  = 'TODAY';
+    badge.style.background = 'var(--green)';
+  } else {
+    badge.textContent  = '📝 PAST DATE';
+    badge.style.background = 'var(--amber)';
+  }
+}
+
+function loadAttendanceForDate() {
+  const dateStr = getDate();
+  const dayLog  = log.filter(r => r.date === dateStr);
+  // Keep only latest mark per student per date
+  const latestMap = {};
+  dayLog.forEach(r => { latestMap[r.section+'|'+r.name] = r; });
+  attendance = {};
+  Object.values(latestMap).forEach(r => {
+    attendance[attKey(r.section, r.name)] = {
+      status:  r.status,
+      time:    r.time,
+      date:    r.date,
+      smsSent: true // past — already notified
+    };
+  });
+}
+
+// ══════════════════════════════════════
+// TABS
+// ══════════════════════════════════════
+function switchTab(name) {
+  const names = ['attendance','roster','messages','log','overview','qr','setup'];
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', names[i]===name));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  if (name==='log')      renderLog();
+  if (name==='messages') { generateMessages(); buildEmergencySectionCheckboxes(); }
+  if (name==='overview') { renderOverview(); buildMonthlyDropdown(); renderMonthlyOverview(); }
+}
+
+// ══════════════════════════════════════
+// ATTENDANCE
+// ══════════════════════════════════════
+function sectionStudents() {
+  return students.filter(s => s.section === currentSection);
+}
+
+// ── LATE COUNTER (per student, per section, per month) ──
+function getLateCount(studentName, section) {
+  const now   = new Date();
+  const month = now.getMonth() + 1;
+  const year  = now.getFullYear();
+
+  // Get all late entries for this student this month
+  const entries = log.filter(r => {
+    if (r.name !== studentName || r.section !== section) return false;
+    const parts = r.date.split('/');
+    if (parts.length < 3) return false;
+    return parseInt(parts[0]) === month && parseInt(parts[2]) === year;
+  });
+
+  // Dedup — keep only latest entry per date
+  const latestMap = {};
+  entries.forEach(r => { latestMap[r.date] = r; });
+
+  // Count only dates where final status is 'late'
+  return Object.values(latestMap).filter(r => r.status === 'late').length;
+}
+
+// Should SMS be sent for this late occurrence?
+function shouldSendLateSMS(studentName, section) {
+  // Count includes today's late (already pushed to log before this is called)
+  return getLateCount(studentName, section) >= 3;
+}
+
+function renderStudents() {
+  const grid = document.getElementById('student-grid');
+  if (!currentSection) {
+    grid.innerHTML = '<div class="empty"><div class="empty-icon">📚</div>Select a section from the dropdown above.</div>';
+    return;
+  }
+  const q = document.getElementById('search-student').value.toLowerCase();
+  const list = sectionStudents().filter(s => s.name.toLowerCase().includes(q));
+  if (!sectionStudents().length) {
+    grid.innerHTML = '<div class="empty"><div class="empty-icon">👥</div>No students in <strong>'+currentSection+'</strong> yet.<br>Go to <strong>Roster</strong> to add them.</div>';
+    return;
+  }
+  if (!list.length) { grid.innerHTML = '<div class="empty">No match found.</div>'; return; }
+
+  const icons  = {present:'✔',late:'⏰',absent:'✘','':`<span style="font-size:10px;color:var(--text-muted)">tap</span>`};
+  const labels = {present:'Present',late:'Late',absent:'Absent','':'Not marked'};
+
+  grid.innerHTML = list.map(s => {
+    const key       = attKey(currentSection, s.name);
+    const a         = attendance[key];
+    const st        = a ? a.status : '';
+    const lateCount = getLateCount(s.name, currentSection);
+    const is3rdLate = st === 'late' && lateCount >= 3;
+
+    // SMS status tag
+    let smsTag = '';
+    if (a && settings.autosms && settings.apikey && s.phone) {
+      if (a.smsSending)    smsTag = '<div style="font-size:10px;color:var(--blue);margin-top:3px;">📡 Sending…</div>';
+      else if (a.smsSent)  smsTag = '<div style="font-size:10px;color:var(--green);margin-top:3px;">📩 SMS sent ✔</div>';
+      else if (a.smsFailed)smsTag = '<div style="font-size:10px;color:var(--red);margin-top:3px;">✘ SMS failed</div>';
+    }
+
+    // Late count badge — show if student has been late at least once this month
+    let lateTag = '';
+    if (lateCount > 0) {
+      const color = lateCount >= 3 ? 'var(--red)' : lateCount === 2 ? 'var(--amber-dark)' : 'var(--text-muted)';
+      const warn  = lateCount >= 3 ? ' ⚠ SMS!' : '';
+      lateTag = `<div style="font-size:10px;font-weight:600;color:${color};margin-top:2px;">⏰ ${lateCount}x late this month${warn}</div>`;
+    }
+
+    // Warning border for 3rd late
+    const cardStyle = is3rdLate ? 'border-color:#A32D2D;box-shadow:0 0 0 2px #F09595;' : '';
+
+    return `<div class="student-btn ${st}" onclick="openStatusModal('${esc(s.name)}')" style="${cardStyle}">
+      <div class="badge">${icons[st]}</div>
+      <div class="sname">${s.name}</div>
+      <div class="sparent">👤 ${s.parent||'—'}</div>
+      <div class="sstatus">${labels[st]}${a&&a.time?'<br><small>'+a.time+'</small>':''}</div>
+      ${lateTag}
+      ${smsTag}
+    </div>`;
+  }).join('');
+  updateStats();
+}
+
+function updateStats() {
+  const list = sectionStudents();
+  let p=0,ab=0,la=0;
+  list.forEach(s => {
+    const a = attendance[attKey(currentSection,s.name)];
+    if (a) { if(a.status==='present')p++; else if(a.status==='absent')ab++; else if(a.status==='late')la++; }
+  });
+  document.getElementById('cnt-present').textContent = p;
+  document.getElementById('cnt-absent').textContent  = ab;
+  document.getElementById('cnt-late').textContent    = la;
+  document.getElementById('cnt-total').textContent   = list.length;
+}
+
+let modalTarget = null;
+function openStatusModal(name) {
+  modalTarget = name;
+  const s = students.find(x=>x.name===name && x.section===currentSection);
+  document.getElementById('modal-sname').textContent = name;
+  document.getElementById('modal-parent-info').textContent = s ? '👤 '+s.parent+'  📱 '+(s.phone||'—')+'  📚 '+s.section : '';
+  document.getElementById('modal-status').classList.add('open');
+}
+
+let lastMark = null; // for undo
+let undoTimer = null;
+
+function setStatus(status) {
+  if (!modalTarget) return;
+  const time    = getTime();
+  const dateStr = getDate();
+  const key     = attKey(currentSection, modalTarget);
+  const prev    = attendance[key] ? {...attendance[key]} : null;
+
+  // Preserve smsSent flag — don't reset it when re-marking a student
+  const prevSmsSent = prev ? prev.smsSent : false;
+  attendance[key] = {status, time, date:dateStr, smsSent: !isToday() || prevSmsSent, smsFailed:false};
+
+  // Remove any existing log entry for this student on this date, then add fresh
+  const existingIdx = log.findIndex(r => r.name===modalTarget && r.section===currentSection && r.date===dateStr);
+  if (existingIdx >= 0) log.splice(existingIdx, 1);
+  log.push({name:modalTarget, section:currentSection, status, date:dateStr, time, class:settings.class||'—'});
+  save();
+  closeModal('modal-status');
+  renderStudents();
+  renderOverview();
+
+  // Store undo state
+  lastMark = { name:modalTarget, section:currentSection, key, prev, logIndex: log.length-1 };
+  showUndoToast('Marked '+modalTarget+' as '+status);
+
+  // Skip SMS for past dates
+  if (!isToday()) {
+    toast('📝 Past record saved — no SMS sent for past dates.');
+    return;
+  }
+
+  // SMS RULES (today only):
+  // • Absent → send SMS (but only ONCE — skip if already sent)
+  // • Late 3rd time → send SMS (but only ONCE)
+  // • Present → NEVER send SMS
+  // • Re-marking → NEVER re-send if already sent
+  if (prevSmsSent) {
+    // Already notified — don't send again even if re-marked
+    if (status === 'present') toast('↩ Re-marked as Present — no SMS (already sent earlier).');
+    else toast('Re-marked as ' + status + ' — SMS already sent earlier, not re-sending.');
+    return;
+  }
+
+  const s = students.find(x=>x.name===modalTarget && x.section===currentSection);
+  const lateCount       = getLateCount(modalTarget, currentSection);
+  const sendSmsForLate  = status === 'late'   && lateCount >= 3;
+  const sendSmsForAbsent= status === 'absent';
+  const shouldSendSMS   = sendSmsForAbsent || sendSmsForLate;
+
+  if (settings.autosms && settings.apikey && shouldSendSMS && s && s.phone) {
+    const modeLabel   = smsMode==='semaphore' ? 'Semaphore (₱0.50)' : 'Prepaid SMS (your load)';
+    const lateWarning = sendSmsForLate ? `\n⚠ This is their ${lateCount}${lateCount===3?'rd':'th'} late this month.` : '';
+    const confirmed   = confirm(
+      'Send SMS to parent via ' + modeLabel + '?\n\n' +
+      '👤 ' + (s.parent||'Parent') + '\n' +
+      '📱 ' + s.phone + '\n' +
+      '📋 ' + modalTarget + ' — ' + status.toUpperCase() +
+      lateWarning + '\n\nTap OK to send, Cancel to skip.'
+    );
+    if (confirmed) {
+      if (smsMode === 'semaphore') {
+        sendSemaphoreSMS(s, status, time);
+      } else {
+        const msg = buildMsg(s, status, time);
+        window.location.href = 'sms:'+s.phone+'?body='+encodeURIComponent(msg);
+      }
+    } else {
+      toast('Parent SMS skipped — send manually from Messages tab.');
+    }
+  } else if (status === 'late' && lateCount < 3) {
+    toast('⏰ Late #'+lateCount+' this month — SMS will send on 3rd late.');
+  } else if (s && !s.phone && shouldSendSMS) {
+    toast('⚠ No phone number for '+modalTarget+' — SMS skipped.');
+  }
+}
+
+// ── SCHEDULE DAY CHECK ──
+// Returns true if today matches the section's schedule days
+// Schedule format examples: "MWF 8:00-9:00 AM", "TTh 1:00-2:30 PM", "Daily", "Mon Wed Fri"
+function isSectionScheduledToday(section) {
+  const info = sectionInfo[section] || {};
+  if (!info.schedule) return true; // no schedule set — always show
+  const sched = info.schedule.toUpperCase();
+  const day   = new Date().getDay(); // 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
+  const dayMap = {
+    'M':1, 'MON':1, 'MONDAY':1,
+    'T':2, 'TUE':2, 'TUESDAY':2,
+    'W':3, 'WED':3, 'WEDNESDAY':3,
+    'TH':4, 'THU':4, 'THURSDAY':4,
+    'F':5, 'FRI':5, 'FRIDAY':5,
+    'S':6, 'SAT':6, 'SATURDAY':6,
+    'MTH':false // handled below
+  };
+  if (sched.includes('DAILY') || sched.includes('EVERYDAY')) return true;
+  if (sched.includes('MWF') || sched.includes('M/W/F')) return [1,3,5].includes(day);
+  if (sched.includes('TTH') || sched.includes('T/TH') || sched.includes('TUTH')) return [2,4].includes(day);
+  if (sched.includes('MTH') || sched.includes('M/TH')) return [1,4].includes(day);
+  if (sched.includes('TWF') || sched.includes('T/W/F')) return [2,3,5].includes(day);
+  if (sched.includes('MW') && !sched.includes('MWF')) return [1,3].includes(day);
+  if (sched.includes('MON')) return day===1;
+  if (sched.includes('TUE')) return day===2;
+  if (sched.includes('WED')) return day===3;
+  if (sched.includes('THU')) return day===4;
+  if (sched.includes('FRI')) return day===5;
+  return true; // default — can't parse, always show
+}
+
+function undoLastMark() {
+  if (!lastMark) return;
+  const { name, section, key, prev, logIndex } = lastMark;
+  if (prev) {
+    attendance[key] = prev;
+  } else {
+    delete attendance[key];
+  }
+  // Remove from log
+  log.splice(logIndex, 1);
+  save();
+  lastMark = null;
+  hideUndoToast();
+  renderStudents();
+  renderOverview();
+  toast('↩ Undone — ' + name + ' mark removed.');
+}
+
+function showUndoToast(msg) {
+  const el = document.getElementById('undo-toast');
+  document.getElementById('undo-msg').textContent = msg;
+  el.style.display = 'flex';
+  clearTimeout(undoTimer);
+  undoTimer = setTimeout(() => { hideUndoToast(); lastMark = null; }, 6000);
+}
+
+function hideUndoToast() {
+  document.getElementById('undo-toast').style.display = 'none';
+}
+
+function markAll(status) {
+  const time    = getTime();
+  const dateStr = getDate();
+  sectionStudents().forEach(s => {
+    const key = attKey(currentSection, s.name);
+    const prevSmsSent = attendance[key] ? attendance[key].smsSent : false;
+    attendance[key] = {status, time, date:dateStr, smsSent: !isToday() || prevSmsSent, smsFailed:false};
+    const idx = log.findIndex(r => r.name===s.name && r.section===currentSection && r.date===dateStr);
+    if (idx >= 0) log.splice(idx, 1);
+    log.push({name:s.name, section:currentSection, status, date:dateStr, time, class:settings.class||'—'});
+  });
+  save(); renderStudents(); renderOverview();
+  const pastNote = isToday() ? '' : ' (past date — no SMS sent)';
+  toast('All '+currentSection+' marked as '+status+pastNote);
+}
+
+function resetAll() {
+  if (!confirm('Reset attendance for '+currentSection+'?')) return;
+  sectionStudents().forEach(s => delete attendance[attKey(currentSection,s.name)]);
+  save(); renderStudents(); renderOverview();
+  toast(currentSection+' attendance reset.');
+}
+
+// ══════════════════════════════════════
+// ROSTER
+// ══════════════════════════════════════
+function renderRoster() {
+  const secF = document.getElementById('filter-section-roster').value;
+  const q    = document.getElementById('search-roster').value.toLowerCase();
+  const filtered = students.filter(s =>
+    (!secF || s.section===secF) &&
+    (s.name.toLowerCase().includes(q) || (s.parent||'').toLowerCase().includes(q))
+  );
+  document.getElementById('roster-count').textContent = students.length;
+  const tbody = document.getElementById('roster-body');
+  if (!students.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px;">No students yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = filtered.map((s) => {
+    const idx = students.indexOf(s);
+    return `<tr>
+      <td style="color:var(--text-muted);font-size:11px;">${idx+1}</td>
+      <td><strong>${s.name}</strong></td>
+      <td><span class="pill" style="background:var(--green-light);color:var(--green-dark);">${s.section}</span></td>
+      <td>${s.parent||'—'}</td>
+      <td style="font-family:monospace;font-size:11px;">${s.phone||'—'}</td>
+      <td><div style="display:flex;gap:5px;">
+        <button class="btn btn-outline" style="padding:4px 8px;font-size:11px;" onclick="openEdit(${idx})">✏️</button>
+        <button class="btn btn-red" style="padding:4px 8px;font-size:11px;" onclick="deleteStudent(${idx})">🗑</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function addStudentManual() {
+  const name    = document.getElementById('add-name').value.trim();
+  const parent  = document.getElementById('add-parent').value.trim();
+  const phone   = document.getElementById('add-phone').value.trim();
+  const gender  = document.getElementById('add-gender').value;
+  const section = document.getElementById('add-section').value;
+  if (!name)    { toast('Student name is required.'); return; }
+  if (!section) { toast('Please select a section.'); return; }
+  if (students.find(s=>s.name.toLowerCase()===name.toLowerCase()&&s.section===section)) { toast('Already exists in '+section); return; }
+  students.push({name,parent,phone,gender,section});
+  save();
+  document.getElementById('add-name').value='';
+  document.getElementById('add-parent').value='';
+  document.getElementById('add-phone').value='';
+  renderRoster(); renderStudents(); updateSectionPill();
+  toast('Added: '+name+' ('+section+')');
+}
+
+function openEdit(idx) {
+  const s = students[idx];
+  document.getElementById('edit-index').value  = idx;
+  document.getElementById('edit-name').value   = s.name;
+  document.getElementById('edit-parent').value = s.parent;
+  document.getElementById('edit-phone').value  = s.phone;
+  document.getElementById('edit-section').value= s.section;
+  document.getElementById('modal-edit').classList.add('open');
+}
+
+function saveEdit() {
+  const idx     = parseInt(document.getElementById('edit-index').value);
+  const name    = document.getElementById('edit-name').value.trim();
+  const parent  = document.getElementById('edit-parent').value.trim();
+  const phone   = document.getElementById('edit-phone').value.trim();
+  const gender  = document.getElementById('edit-gender') ? document.getElementById('edit-gender').value : 'male';
+  const section = document.getElementById('edit-section').value;
+  if (!name) { toast('Name required.'); return; }
+  const old = students[idx];
+  // migrate attendance key if name/section changed
+  const oldKey = attKey(old.section, old.name);
+  const newKey = attKey(section, name);
+  if (oldKey !== newKey && attendance[oldKey]) {
+    attendance[newKey] = attendance[oldKey];
+    delete attendance[oldKey];
+  }
+  students[idx] = {name,parent,phone,gender,section};
+  save(); closeModal('modal-edit'); renderRoster(); renderStudents(); updateSectionPill();
+  toast('Updated: '+name);
+}
+
+function deleteStudent(idx) {
+  const s = students[idx];
+  if (!confirm('Remove '+s.name+' from '+s.section+'?')) return;
+  delete attendance[attKey(s.section,s.name)];
+  students.splice(idx,1);
+  save(); renderRoster(); renderStudents(); updateSectionPill();
+  toast('Removed: '+s.name);
+}
+
+function clearRoster() {
+  if (!confirm('Clear ALL students from ALL sections? This cannot be undone.')) return;
+  students=[]; attendance={};
+  save(); renderRoster(); renderStudents(); updateSectionPill();
+  toast('Roster cleared.');
+}
+
+// ══════════════════════════════════════
+// CSV UPLOAD / EXPORT
+// ══════════════════════════════════════
+// Proper CSV line parser — handles quoted fields with commas inside them
+function parseCSVLine(line) {
+  const result = [];
+  let cur = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (inQuotes && line[i+1] === '"') { cur += '"'; i++; } // escaped quote
+      else inQuotes = !inQuotes;
+    } else if (ch === ',' && !inQuotes) {
+      result.push(cur.trim());
+      cur = '';
+    } else {
+      cur += ch;
+    }
+  }
+  result.push(cur.trim());
+  return result;
+}
+
+function uploadCSV(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    // Split into lines, but respect quoted newlines (rare) — simple line split is fine for typical exports
+    const rawLines = ev.target.result.split(/\r?\n/).filter(l => l.trim() !== '');
+    let added=0, skipped=0, errors=0;
+    rawLines.forEach((line,i) => {
+      const cols = parseCSVLine(line);
+      const name = (cols[0]||'').trim();
+      if (i===0 && name.toLowerCase().includes('name')) return; // skip header row
+      if (!name) return;
+      const parent  = (cols[1]||'').trim();
+      const phone   = (cols[2]||'').trim();
+      const section = (cols[3]||'').trim() || sectionNames[0];
+      const gender  = ((cols[4]||'male').trim()).toLowerCase();
+      if (students.find(s=>s.name.toLowerCase()===name.toLowerCase()&&s.section===section)){skipped++;return;}
+      students.push({name,parent,phone,section,gender}); added++;
+    });
+    save(); renderRoster(); renderStudents(); updateSectionPill();
+    toast(added+' students added, '+skipped+' skipped (duplicates).');
+    e.target.value='';
+  };
+  reader.readAsText(file);
+}
+
+function downloadTemplate() {
+  const rows = sectionNames.slice(0,3).map((s,i)=>`"Lastname ${i+1}, Firstname M.","Parent Lastname ${i+1}, Parent Firstname","0917000000${i}","${s}","${i%2===0?'male':'female'}"`).join('\n');
+  const csv  = 'Student Name,Parent Name,Phone Number,Section,Gender\n'+rows;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv'}));
+  a.download = 'roster_template.csv'; a.click();
+  toast('Template downloaded — note the quotes around names with commas!');
+}
+
+function exportRosterCSV() {
+  const rows = students.map(s=>`"${s.name}","${s.parent}","${s.phone}","${s.section}","${s.gender||'male'}"`).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['Student Name,Parent Name,Phone Number,Section,Gender\n'+rows],{type:'text/csv'}));
+  a.download = 'class_roster.csv'; a.click();
+}
+
+// ══════════════════════════════════════
+// MESSAGES
+// ══════════════════════════════════════
+function buildMsg(s, status, time) {
+  const info = sectionInfo[s.section] || {};
+  let msg = (document.getElementById('msg-template').value || '')
+    .replace(/{name}/g,     s.name)
+    .replace(/{parent}/g,   s.parent||'Parent')
+    .replace(/{status}/g,   status.toUpperCase())
+    .replace(/{date}/g,     getDate())
+    .replace(/{time}/g,     time)
+    .replace(/{class}/g,    settings.class||'—')
+    .replace(/{section}/g,  s.section||'—')
+    .replace(/{schedule}/g, info.schedule||'—')
+    .replace(/{adviser}/g,  info.adviser||'—');
+  // Append reply number for Semaphore messages
+  if (smsMode === 'semaphore' && settings.replyNum) {
+    msg += ' Reply/concerns: ' + settings.replyNum;
+  }
+  return msg;
+}
+
+function buildAdviserMsg(s, status, time) {
+  const info = sectionInfo[s.section] || {};
+  const template = document.getElementById('msg-template-adviser') ?
+    document.getElementById('msg-template-adviser').value :
+    'Good day po, {adviser}! Your advisory student {name} ({section}) was marked {status} in {class} class ({schedule}) on {date} at {time}.';
+  return template
+    .replace(/{name}/g,     s.name)
+    .replace(/{parent}/g,   s.parent||'Parent')
+    .replace(/{status}/g,   status.toUpperCase())
+    .replace(/{date}/g,     getDate())
+    .replace(/{time}/g,     time)
+    .replace(/{class}/g,    settings.class||'—')
+    .replace(/{section}/g,  s.section||'—')
+    .replace(/{schedule}/g, info.schedule||'—')
+    .replace(/{adviser}/g,  info.adviser||'—');
+}
+
+function generateMessages() {
+  const list = document.getElementById('messages-list');
+  const marked = students.filter(s => attendance[attKey(s.section,s.name)]);
+  if (!marked.length) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">💬</div>Mark attendance first.</div>';
+    allMessages=[]; updateNotifyCount(); return;
+  }
+  allMessages = marked.map(s => {
+    const a   = attendance[attKey(s.section,s.name)];
+    const msg = buildMsg(s, a.status, a.time);
+    return {student:s, status:a.status, msg, phone:s.phone, time:a.time};
+  });
+  renderMessageList();
+  updateNotifyCount();
+}
+
+function renderMessageList() {
+  const list = document.getElementById('messages-list');
+  const filtered = msgFilter==='all' ? allMessages : allMessages.filter(m=>m.status===msgFilter);
+  if (!filtered.length) { list.innerHTML='<div class="empty">No messages for this filter.</div>'; return; }
+  const bc = {present:'badge-present',late:'badge-late',absent:'badge-absent'};
+  list.innerHTML = filtered.map((m,i) => {
+    const phone      = m.phone ? m.phone.trim() : '';
+    const intl       = phone ? phone.replace(/^0/,'+63') : '';
+    const viberUrl   = phone ? `viber://chat?number=${encodeURIComponent(intl)}` : '';
+    const smsUrl     = phone ? `sms:${phone}?body=${encodeURIComponent(m.msg)}` : '';
+    const needsNotify = needsParentSMS(m);
+    const lateCount   = m.status==='late' ? getLateCount(m.student.name, m.student.section) : 0;
+    const lateInfo    = m.status==='late' ? `<span style="font-size:10px;font-weight:600;color:${lateCount>=3?'var(--red)':'var(--amber-dark)'};">⏰ Late #${lateCount} this month${lateCount<3?' (SMS on 3rd)':' ⚠ SMS needed'}</span>` : '';
+    const msgId      = 'msg_'+i;
+    const secInfo    = sectionInfo[m.student.section] || {};
+    const key        = attKey(m.student.section, m.student.name);
+    const attData    = attendance[key] || {};
+    const smsSent    = attData.smsSent || false;
+    const parentReplied = attData.parentReplied || false;
+
+    // Single SMS button based on mode
+    let sendBtn = '';
+    if (needsNotify && phone) {
+      if (smsMode === 'semaphore') {
+        sendBtn = `<button class="sms-btn" onclick="sendSemaphoreSMSFromMsg('${esc(m.student.name)}','${esc(m.student.section)}','${esc(phone)}',${i})">📡 Send (Semaphore)</button>`;
+      } else {
+        sendBtn = `<a class="sms-btn" href="${smsUrl}" onclick="markSmsSent('${esc(key)}')">📱 Send SMS</a>`;
+      }
+    }
+
+    // Sent status badge
+    let sentBadge = '';
+    if (needsNotify && smsSent) {
+      sentBadge = parentReplied
+        ? `<span style="font-size:11px;font-weight:600;color:var(--green);">✔ Sent · 💬 Parent replied</span>`
+        : `<span style="font-size:11px;font-weight:600;color:var(--blue);">📩 Sent · <button onclick="markParentReplied('${esc(key)}')" style="background:none;border:none;color:var(--green);font-size:11px;font-weight:600;cursor:pointer;padding:0;">Mark as Replied ✔</button></span>`;
+    } else if (needsNotify && !smsSent && phone) {
+      sentBadge = `<span style="font-size:11px;color:var(--text-muted);">Not yet sent</span>`;
+    }
+
+    return `<div class="msg-item" id="card-${key.replace(/[^a-zA-Z0-9]/g,'_')}" style="${smsSent&&!parentReplied?'border-color:#85B7EB;':''}${parentReplied?'border-color:var(--green);background:var(--green-light);':''}">
+      <div class="msg-header">
+        <div>
+          <div class="msg-name">${m.student.name}</div>
+          <div class="msg-meta">📚 ${m.student.section}${secInfo.schedule?' · 🕐 '+secInfo.schedule:''} &nbsp;👤 ${m.student.parent||'—'} &nbsp;📱 ${phone||'—'}</div>
+          ${lateInfo ? '<div style="margin-top:2px;">'+lateInfo+'</div>' : ''}
+        </div>
+        <span class="msg-status-badge ${bc[m.status]}">${m.status.toUpperCase()}</span>
+      </div>
+      <div class="msg-text" id="${msgId}">${m.msg}</div>
+      <div class="msg-actions" style="flex-wrap:wrap;gap:6px;">
+        <button class="btn btn-outline" style="padding:5px 10px;font-size:11px;" onclick="copyOneMsg('${msgId}','${esc(m.student.name)}')">📋 Copy</button>
+        ${needsNotify&&viberUrl?`<a class="viber-btn" href="${viberUrl}" target="_blank">💬 Viber</a>`:''}
+        ${sendBtn}
+        ${needsNotify&&!phone?'<span style="font-size:11px;color:var(--text-muted);">No phone saved</span>':''}
+        ${!needsNotify?'<span style="font-size:11px;color:var(--green);font-weight:500;">✔ Present — no notification needed</span>':''}
+      </div>
+      ${needsNotify?`<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--gray-border);">${sentBadge}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function filterMessages(f) {
+  msgFilter=f;
+  ['all','present','late','absent'].forEach(x=>{
+    const b=document.getElementById('mf-'+x);
+    if(b){b.style.borderColor=x===f?'var(--green)':'';b.style.color=x===f?'var(--green)':'';}
+  });
+  renderMessageList();
+}
+
+function setSmsMode(mode) {
+  smsMode = mode;
+  localStorage.setItem('att4_sms_mode', mode);
+  const prepaidBtn   = document.getElementById('sms-mode-prepaid');
+  const semaphoreBtn = document.getElementById('sms-mode-semaphore');
+  const hint         = document.getElementById('sms-mode-hint');
+  if (mode === 'prepaid') {
+    prepaidBtn.style.background   = 'var(--green)';
+    prepaidBtn.style.color        = '#fff';
+    semaphoreBtn.style.background = 'var(--gray-light)';
+    semaphoreBtn.style.color      = 'var(--text-muted)';
+    hint.innerHTML = '📱 <strong>Prepaid:</strong> Opens your phone\'s SMS app — sends from your own SIM. Uses your load (~₱1/SMS). Works offline.';
+  } else {
+    semaphoreBtn.style.background = 'var(--green)';
+    semaphoreBtn.style.color      = '#fff';
+    prepaidBtn.style.background   = 'var(--gray-light)';
+    prepaidBtn.style.color        = 'var(--text-muted)';
+    hint.innerHTML = '📡 <strong>Semaphore:</strong> Sends automatically via API — no tapping Send. Costs ₱0.50/SMS. Requires internet.';
+    if (!settings.apikey) {
+      hint.innerHTML += ' <span style="color:var(--red);font-weight:600;">⚠ No API key set — go to Setup first.</span>';
+    }
+  }
+  renderMessageList();
+}
+
+// Send via Semaphore directly from message card
+async function sendSemaphoreSMSFromMsg(name, section, phone, msgIdx) {
+  if (!settings.apikey) { toast('⚠ No Semaphore API key — go to Setup.'); return; }
+  const m = allMessages[msgIdx];
+  if (!m) return;
+  const s = students.find(x=>x.name===name && x.section===section);
+  if (!s) return;
+  await sendSemaphoreSMS(s, m.status, m.student.time || getTime());
+}
+
+function copyOneMsg(id,name){ navigator.clipboard.writeText(document.getElementById(id).textContent).then(()=>toast('Copied for '+name)); }
+function copyAllMessages(){
+  if(!allMessages.length){toast('Generate messages first.');return;}
+  const all=allMessages.map(m=>m.student.name+' ('+m.student.section+') '+m.student.phone+'\n'+m.msg).join('\n\n—\n\n');
+  navigator.clipboard.writeText(all).then(()=>toast('All messages copied!'));
+}
+
+// Mark SMS as sent manually (for prepaid — called when link is clicked)
+function markSmsSent(key) {
+  setTimeout(() => {
+    if (attendance[key]) { attendance[key].smsSent = true; save(); renderMessageList(); updateNotifyCount(); }
+  }, 1000); // slight delay so the SMS app opens first
+}
+
+// Mark parent as replied
+function markParentReplied(key) {
+  if (attendance[key]) {
+    attendance[key].parentReplied = true;
+    save(); renderMessageList(); updateNotifyCount();
+    toast('✔ Marked as replied!');
+  }
+}
+
+// ── NOTIFY ALL PARENTS (Absent/Late only) ──
+// Should this message card show send button / be included in notify queue?
+function needsParentSMS(m) {
+  if (m.status === 'absent') return true;
+  if (m.status === 'late') {
+    const count = getLateCount(m.student.name, m.student.section);
+    return count >= 3;
+  }
+  return false;
+}
+
+function buildNotifyQueue() {
+  return allMessages.filter(m => {
+    const key = attKey(m.student.section, m.student.name);
+    const a = attendance[key] || {};
+    return needsParentSMS(m) && m.phone && !a.smsSent;
+  });
+}
+
+function markAllAsSent() {
+  if (!allMessages.length) { toast('Generate messages first.'); return; }
+  const toMark = allMessages.filter(m => {
+    const a = attendance[attKey(m.student.section, m.student.name)] || {};
+    return needsParentSMS(m) && !a.smsSent;
+  });
+  if (!toMark.length) { toast('✔ All already marked as sent!'); return; }
+  if (!confirm(`Mark ${toMark.length} student(s) as "Already Sent"?\n\nThis covers:\n• All absent students\n• Late students on their 3rd+ late this month\n\nNo SMS will be sent — tracking only.`)) return;
+  toMark.forEach(m => {
+    const key = attKey(m.student.section, m.student.name);
+    if (attendance[key]) attendance[key].smsSent = true;
+  });
+  save();
+  generateMessages();
+  toast('✔ ' + toMark.length + ' record(s) marked as already sent.');
+}
+
+function updateNotifyCount() {
+  const total   = allMessages.filter(m => needsParentSMS(m)).length;
+  const sent    = allMessages.filter(m => { const a=attendance[attKey(m.student.section,m.student.name)]||{}; return a.smsSent; }).length;
+  const replied = allMessages.filter(m => { const a=attendance[attKey(m.student.section,m.student.name)]||{}; return a.parentReplied; }).length;
+  const noPhone = allMessages.filter(m => needsParentSMS(m) && !m.phone).length;
+  const lateWaiting = allMessages.filter(m => m.status==='late' && getLateCount(m.student.name, m.student.section) < 3).length;
+  const el = document.getElementById('notify-count');
+  if (!el) return;
+  if (!allMessages.length) { el.textContent='Generate messages first.'; return; }
+  el.innerHTML = `${total} need SMS · <span style="color:var(--blue);">📩 ${sent} sent</span> · <span style="color:var(--green);">💬 ${replied} replied</span>`
+    + (lateWaiting ? ` · <span style="color:var(--amber-dark);">⏰ ${lateWaiting} late (below 3x)</span>` : '')
+    + (noPhone ? ` · <span style="color:var(--red);">⚠ ${noPhone} no phone</span>` : '');
+}
+
+function notifyAllParents() {
+  generateMessages(); // refresh first
+  const queue = buildNotifyQueue();
+  if (!queue.length) {
+    const alreadySent = allMessages.filter(m=>{const a=attendance[attKey(m.student.section,m.student.name)]||{};return a.smsSent;}).length;
+    if (alreadySent > 0) toast('✔ All absent/late parents already notified!');
+    else toast('No absent/late students with phone numbers.');
+    return;
+  }
+  if (smsMode === 'semaphore') {
+    if (!settings.apikey) { toast('⚠ No Semaphore API key — go to Setup.'); return; }
+    notifyAllSemaphore(queue);
+  } else {
+    notifyQueue = queue; notifyIndex = 0; sendNextSMS();
+  }
+}
+
+function sendNextSMS() {
+  if (notifyIndex >= notifyQueue.length) { toast('✔ All SMS done!'); renderMessageList(); updateNotifyCount(); return; }
+  const m = notifyQueue[notifyIndex];
+  const key = attKey(m.student.section, m.student.name);
+  toast('📩 SMS '+(notifyIndex+1)+'/'+notifyQueue.length+': '+m.student.name);
+  if (attendance[key]) { attendance[key].smsSent = true; save(); }
+  window.location.href = 'sms:'+m.phone+'?body='+encodeURIComponent(m.msg);
+  notifyIndex++;
+  setTimeout(() => {
+    if (notifyIndex < notifyQueue.length) {
+      const nx = notifyQueue[notifyIndex];
+      if (confirm('✔ Done with '+(notifyIndex)+' of '+notifyQueue.length+'.\n\nNext:\n👤 '+nx.student.parent+'\n📱 '+nx.phone+'\n📋 '+nx.student.name+' — '+nx.status.toUpperCase()+'\n\nSend next SMS?')) {
+        sendNextSMS();
+      } else {
+        renderMessageList(); updateNotifyCount();
+        toast('Paused at '+(notifyIndex)+' of '+notifyQueue.length+'. Tap Notify Parents to continue.');
+      }
+    } else {
+      renderMessageList(); updateNotifyCount();
+      toast('✔ All parent SMS sent!');
+    }
+  }, 2000);
+}
+
+async function notifyAllSemaphore(queue) {
+  const total = queue.length;
+  let sent=0, failed=0;
+  toast('📡 Sending '+total+' SMS via Semaphore…');
+  for (let i=0; i<queue.length; i++) {
+    const m = queue[i];
+    const s = students.find(x=>x.name===m.student.name && x.section===m.student.section);
+    if (!s) continue;
+    toast('📡 '+(i+1)+'/'+total+': '+s.name+'…');
+    const key = attKey(s.section, s.name);
+    try {
+      const res = await fetch('https://api.semaphore.co/api/v4/messages',{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({apikey:settings.apikey, number:s.phone.replace(/\D/g,''), message:m.msg, sendername:settings.sender||'SEMAPHORE'})
+      });
+      const data = await res.json();
+      if (res.ok && !data.error) {
+        if (attendance[key]) { attendance[key].smsSent=true; attendance[key].smsFailed=false; }
+        sent++;
+      } else { if(attendance[key]) attendance[key].smsFailed=true; failed++; }
+    } catch(e) {
+      // CORS fallback
+      semaphorePost(s.phone, m.msg, ()=>{});
+      if (attendance[key]) { attendance[key].smsSent=true; attendance[key].smsFailed=false; }
+      sent++;
+    }
+    await new Promise(r=>setTimeout(r,500));
+  }
+  save(); renderStudents(); renderMessageList(); updateNotifyCount();
+  toast('✔ Done! '+sent+' sent'+(failed?' · '+failed+' failed':'')+'.');
+}
+
+function notifyAllViber() {
+  generateMessages();
+  const queue = allMessages.filter(m=>(m.status==='absent'||m.status==='late')&&m.phone);
+  if (!queue.length) { toast('No absent/late students with phone numbers.'); return; }
+  notifyQueue=queue; notifyIndex=0; sendNextViber();
+}
+
+function sendNextViber() {
+  if (notifyIndex>=notifyQueue.length){toast('✔ All Viber done!');renderMessageList();updateNotifyCount();return;}
+  const m=notifyQueue[notifyIndex];
+  navigator.clipboard.writeText(m.msg).catch(()=>{});
+  window.open('viber://chat?number='+encodeURIComponent(m.phone.replace(/^0/,'+63')),'_blank');
+  notifyIndex++;
+  setTimeout(()=>{
+    if(notifyIndex<notifyQueue.length){
+      const nx=notifyQueue[notifyIndex];
+      if(confirm('Message copied! Paste in Viber & send.\n\nNext:\n👤 '+nx.student.parent+'\n📱 '+nx.phone+'\n'+nx.student.name+' — '+nx.status.toUpperCase()+'\n\n('+(notifyIndex+1)+' of '+notifyQueue.length+')\n\nContinue?'))sendNextViber();
+      else{renderMessageList();updateNotifyCount();}
+    } else {renderMessageList();updateNotifyCount();toast('✔ All Viber done!');}
+  },1500);
+}
+
+// ── ADVISER SUMMARY (one SMS per section, not per student) ──
+function buildAdviserSummaryMsg(section) {
+  const info    = sectionInfo[section] || {};
+  if (!info.adviserPhone || !info.notifyAdviser) return null;
+  const secStudents = students.filter(s => s.section === section);
+  let present=0, absent=0, late=0, absentNames=[], lateNames=[];
+  secStudents.forEach(s => {
+    const a = attendance[attKey(section, s.name)];
+    if (!a) return;
+    if (a.status==='present') present++;
+    else if (a.status==='absent') { absent++; absentNames.push(s.name); }
+    else if (a.status==='late')   { late++;   lateNames.push(s.name); }
+  });
+  const template = (document.getElementById('msg-template-adviser')||{}).value ||
+    'Good day po! In {class} - {section} ({schedule}) today, {date} {time}: {present} Present, {absent} Absent, {late} Late.{absentnames}{latenames}';
+  const absentPart = absentNames.length ? '\nABSENT: '+absentNames.join('; ')+'.' : '';
+  const latePart   = lateNames.length   ? '\nLATE: '+lateNames.join('; ')+'.'     : '';
+  let msg = template
+    .replace(/{class}/g,       settings.class||'—')
+    .replace(/{section}/g,     section)
+    .replace(/{schedule}/g,    info.schedule||'—')
+    .replace(/{date}/g,        getDate())
+    .replace(/{time}/g,        getTime())
+    .replace(/{present}/g,     present)
+    .replace(/{absent}/g,      absent)
+    .replace(/{late}/g,        late)
+    .replace(/{absentnames}/g, absentPart)
+    .replace(/{latenames}/g,   latePart);
+  // Append reply number for Semaphore messages
+  if (smsMode === 'semaphore' && settings.replyNum) {
+    msg += ' Reply/concerns: ' + settings.replyNum;
+  }
+  return { msg, phone: info.adviserPhone, adviser: info.adviser, section };
+}
+
+function sendAdviserSummary() {
+  // Only send to the CURRENT section's adviser
+  const section = currentSection;
+
+  if (!section) {
+    alert('Please select a section first from the dropdown at the top.');
+    return;
+  }
+
+  const info = sectionInfo[section] || {};
+
+  if (!info.notifyAdviser || !info.adviserPhone) {
+    alert('No adviser set up for ' + section + '.\n\nGo to ⚙️ Setup → My Sections → ' + section + ' → add Adviser name, phone number, and enable "Also notify adviser".');
+    return;
+  }
+
+  const summary = buildAdviserSummaryMsg(section);
+  if (!summary) {
+    alert('No attendance data for ' + section + ' today. Mark attendance first.');
+    return;
+  }
+
+  // Show preview and confirm
+  if (!confirm(
+    'Send attendance summary to adviser of ' + section + '?\n\n' +
+    '👨‍🏫 ' + (info.adviser||'Adviser') + '\n' +
+    '📱 ' + info.adviserPhone + '\n\n' +
+    summary.msg + '\n\nTap OK to send.'
+  )) return;
+
+  if (smsMode === 'semaphore' && settings.apikey) {
+    fetch('https://api.semaphore.co/api/v4/messages', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({apikey:settings.apikey, number:info.adviserPhone.replace(/\D/g,''), message:summary.msg, sendername:settings.sender||'SEMAPHORE'})
+    }).then(r=>r.json()).then(d => {
+      toast(d&&!d.error ? '✔ Summary sent to '+info.adviser+' ('+section+')' : '✘ Failed: '+(d.message||'Error'));
+    }).catch(() => {
+      semaphorePost(info.adviserPhone, summary.msg, () => {
+        toast('✔ Summary sent to '+info.adviser+' ('+section+')');
+      });
+    });
+  } else {
+    toast('📩 Opening SMS for '+info.adviser+'...');
+    window.location.href = 'sms:'+info.adviserPhone+'?body='+encodeURIComponent(summary.msg);
+  }
+}
+
+// ══════════════════════════════════════
+// LOG
+// ══════════════════════════════════════
+function renderLog() {
+  const secF  = document.getElementById('filter-log-section').value;
+  const dateF = document.getElementById('filter-log-date').value;
+  let filtered = [...log].reverse();
+  if (secF)  filtered = filtered.filter(r=>r.section===secF);
+  if (dateF) {
+    const d = new Date(dateF).toLocaleDateString('en-PH');
+    filtered = filtered.filter(r=>r.date===d);
+  }
+  const tbody = document.getElementById('log-body');
+  if (!filtered.length) { tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:24px;">No records.</td></tr>'; return; }
+  const c={present:'#E1F5EE',late:'#FAEEDA',absent:'#FCEBEB'};
+  const t={present:'#085041',late:'#633806',absent:'#A32D2D'};
+  tbody.innerHTML=filtered.map(r=>`<tr>
+    <td>${r.name}</td>
+    <td><span class="pill" style="background:var(--green-light);color:var(--green-dark);">${r.section||'—'}</span></td>
+    <td><span class="pill" style="background:${c[r.status]};color:${t[r.status]}">${r.status}</span></td>
+    <td>${r.date}</td><td>${r.time}</td>
+  </tr>`).join('');
+}
+
+function clearAllData() {
+  if (!confirm('Reset everything to a fresh start?\n\nThis will delete ALL students, attendance records, sections, and settings.\n\nMake sure to Export a Backup first if you want to keep your data!')) return;
+  ['att4_students','att4_attendance','att4_log','att4_sections','att4_settings',
+   'att3_students','att3_attendance','att3_log','att3_sections','att3_settings',
+   'att2_students','att2_attendance','att2_log','att2_settings'].forEach(k => localStorage.removeItem(k));
+  students=[]; attendance={}; settings={}; log=[];
+  sectionNames=[...DEFAULT_SECTIONS];
+  currentSection=sectionNames[0];
+  ['setup-class','setup-teacher','setup-sy','setup-url','setup-apikey','setup-sender','setup-testphone','setup-replynum']
+    .forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  const autoEl=document.getElementById('setup-autosms'); if(autoEl) autoEl.checked=false;
+  buildSectionSelectors(); buildSectionNameInputs();
+  renderStudents(); renderRoster(); renderLog(); renderOverview();
+  toast('✔ App reset to fresh start!');
+}
+
+// ══ AUTO-UPDATE ══
+let latestVersion = null;
+let latestUrl     = null;
+
+function compareVersions(a, b) {
+  const pa = a.replace('v','').split('.').map(Number);
+  const pb = b.replace('v','').split('.').map(Number);
+  for (let i=0; i<3; i++) {
+    if ((pa[i]||0) > (pb[i]||0)) return 1;
+    if ((pa[i]||0) < (pb[i]||0)) return -1;
+  }
+  return 0;
+}
+
+async function checkForUpdates(manual=false) {
+  try {
+    const res  = await fetch(UPDATE_CHECK_URL + '?t=' + Date.now());
+    const data = await res.json();
+    latestVersion = data.version;
+    latestUrl     = data.url;
+
+    const hasUpdate = compareVersions(latestVersion, APP_VERSION) > 0;
+    const dismissed = localStorage.getItem('att4_dismissed_version');
+    const installed = localStorage.getItem('att4_installed_version');
+    const shouldShow = hasUpdate && dismissed !== latestVersion && installed !== latestVersion;
+
+    // Update version card in Setup
+    const badge   = document.getElementById('version-status-badge');
+    const info    = document.getElementById('update-card-info');
+    const btn     = document.getElementById('install-update-btn');
+
+    if (shouldShow) {
+      // Show banner
+      const banner = document.getElementById('update-banner');
+      const bannerText = document.getElementById('update-banner-text');
+      if (banner) {
+        bannerText.textContent = '🆕 New version ' + latestVersion + ' available! (You have ' + APP_VERSION + ')';
+        banner.style.display = 'block';
+      }
+      // Update Setup card
+      if (badge) { badge.textContent = '🆕 Update available!'; badge.style.background='var(--blue)'; badge.style.color='#fff'; }
+      if (info)  { info.textContent = 'New version '+latestVersion+' is available. Your current version is '+APP_VERSION+'. Tap Install Update to upgrade — your data will not be affected.'; info.style.display='block'; }
+      if (btn)   { btn.style.display='inline-flex'; }
+      if (manual) toast('🆕 Update available: ' + latestVersion);
+    } else {
+      if (badge) { badge.textContent = '✔ Up to date'; badge.style.background='var(--green-light)'; badge.style.color='var(--green-dark)'; }
+      if (info)  { info.style.display='none'; }
+      if (btn)   { btn.style.display='none'; }
+      if (manual) toast('✔ You have the latest version (' + APP_VERSION + ')');
+    }
+  } catch(e) {
+    if (manual) toast('Could not check for updates — make sure you have internet.');
+  }
+}
+
+async function installUpdate() {
+  if (!latestVersion) {
+    await checkForUpdates(false);
+    if (!latestVersion) { toast('No update info. Check internet.'); return; }
+  }
+  if (!confirm(
+    '⬇ Install Update ' + latestVersion + '?\n\n' +
+    '✅ Your data will NOT be deleted.\n' +
+    'The page will reload with the new version.\n\nTap OK to proceed.'
+  )) return;
+
+  // Auto-backup before updating
+  try {
+    const backup = {
+      version:1, exported:new Date().toISOString(),
+      students, attendance, settings, log, sectionNames, sectionInfo,
+      msgTemplate:    (document.getElementById('msg-template')||{}).value||'',
+      msgTemplateAdv: (document.getElementById('msg-template-adviser')||{}).value||''
+    };
+    localStorage.setItem('att4_pre_update_backup', JSON.stringify(backup));
+    localStorage.setItem('att4_installed_version', latestVersion);
+  } catch(e) {}
+
+  toast('⬇ Installing ' + latestVersion + '...');
+
+  // Show installing screen
+  document.body.innerHTML = `
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;background:#f7f6f2;text-align:center;padding:20px;">
+      <div style="font-size:48px;margin-bottom:16px;">⬇</div>
+      <div style="font-size:20px;font-weight:700;color:#085041;margin-bottom:8px;">Installing v${latestVersion}...</div>
+      <div style="font-size:14px;color:#888;margin-bottom:24px;">Your data is safe. Reloading in a moment.</div>
+      <div style="font-size:12px;color:#aaa;">If it doesn't reload automatically,<br>press your browser's refresh button.</div>
+    </div>`;
+
+  // Clear cache via service worker if available
+  if ('caches' in window) {
+    try {
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    } catch(e) {}
+  }
+
+  // Force hard reload bypassing cache after short delay
+  setTimeout(() => {
+    // Add unique timestamp to force fresh fetch from GitHub
+    const freshUrl = 'https://cristinagarcia1227.github.io/attendance/?' + Date.now();
+    window.location.replace(freshUrl);
+  }, 1500);
+}
+
+function dismissUpdate() {
+  const banner = document.getElementById('update-banner');
+  if (banner) banner.style.display = 'none';
+  // Remember dismissed version so we don't show it again until next version
+  localStorage.setItem('att4_dismissed_version', latestVersion);
+}
+const EMERGENCY_TEMPLATES = {
+  early:      'Good day po! This is Ma\'am Garcia, Math 10 Teacher. Please be informed that there will be EARLY DISMISSAL today. Kindly fetch your child as soon as possible. Thank you po!',
+  suspension: 'Good day po! This is Ma\'am Garcia, Math 10 Teacher. Classes are SUSPENDED today due to unavoidable circumstances. Please ensure your child\'s safety. Thank you po!',
+  earthquake: 'Good day po! This is Ma\'am Garcia, Math 10 Teacher. Due to the recent EARTHQUAKE, school operations are temporarily suspended. Please check on your child\'s safety. Thank you po!',
+  flood:      'Good day po! This is Ma\'am Garcia, Math 10 Teacher. Due to severe weather/flooding, classes are CANCELLED today. Stay safe and stay indoors po! Thank you!'
+};
+
+function setEmergencyTemplate(type) {
+  const el = document.getElementById('emergency-msg');
+  if (el) { el.value = EMERGENCY_TEMPLATES[type]; saveTemplates(); updateEmergencyCount(); }
+}
+
+function buildEmergencySectionCheckboxes() {
+  const container = document.getElementById('emergency-section-checkboxes');
+  if (!container) return;
+  container.innerHTML = sectionNames.map(s =>
+    `<label style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:500;cursor:pointer;background:#fff;border:1.5px solid #F09595;border-radius:8px;padding:5px 10px;">
+      <input type="checkbox" value="${s}" checked onchange="updateEmergencyCount()" style="accent-color:var(--red);width:14px;height:14px;"/>
+      ${s}
+    </label>`
+  ).join('');
+  updateEmergencyCount();
+}
+
+function getEmergencyRecipients() {
+  const boxes = document.querySelectorAll('#emergency-section-checkboxes input[type=checkbox]:checked');
+  const secs  = [...boxes].map(c => c.value);
+  const seen  = new Set();
+  return students.filter(s => {
+    if (!secs.includes(s.section) || !s.phone) return false;
+    if (seen.has(s.phone)) return false;
+    seen.add(s.phone); return true;
+  });
+}
+
+function updateEmergencyCount() {
+  const el = document.getElementById('emergency-count');
+  if (el) el.textContent = '📨 ' + getEmergencyRecipients().length + ' parent(s) will receive this message';
+}
+
+async function sendEmergencySemaphore() {
+  if (!settings.apikey) { alert('No Semaphore API key.\nGo to ⚙️ Setup → Semaphore Auto-SMS.'); return; }
+  const msg = (document.getElementById('emergency-msg')||{}).value||'';
+  if (!msg.trim()) { toast('Please type your message first.'); return; }
+  const recipients = getEmergencyRecipients();
+  if (!recipients.length) { toast('No recipients found.'); return; }
+  if (!confirm(
+    '🚨 EMERGENCY BROADCAST via Semaphore\n\n' +
+    '📨 ' + recipients.length + ' parents\n' +
+    '💰 Cost: ₱' + (recipients.length * 0.5).toFixed(2) + '\n\n' +
+    '"' + msg.substring(0,120) + (msg.length>120?'...':'') + '"\n\n' +
+    'Tap OK to send to ALL parents now.'
+  )) return;
+
+  let sent=0, failed=0;
+  toast('🚨 Sending to ' + recipients.length + ' parents...');
+  for (let i=0; i<recipients.length; i++) {
+    const s = recipients[i];
+    const phone   = s.phone.replace(/\D/g,'');
+    const fullMsg = settings.replyNum ? msg+' Reply/concerns: '+settings.replyNum : msg;
+    try {
+      const res = await fetch('https://api.semaphore.co/api/v4/messages',{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({apikey:settings.apikey, number:phone, message:fullMsg, sendername:settings.sender||'SEMAPHORE'})
+      });
+      const data = await res.json();
+      if (res.ok && !data.error) sent++; else failed++;
+    } catch(e) { semaphorePost(phone, fullMsg, ()=>{}); sent++; }
+    if ((i+1)%5===0 || i===recipients.length-1) toast('🚨 Sending... '+(i+1)+'/'+recipients.length);
+    await new Promise(r=>setTimeout(r,350));
+  }
+  alert('✔ Emergency Broadcast Complete!\n\n✅ Sent: '+sent+' parents'+(failed?'\n❌ Failed: '+failed:''));
+}
+
+function sendEmergencyPrepaid() {
+  const msg = (document.getElementById('emergency-msg')||{}).value||'';
+  if (!msg.trim()) { toast('Please type your message first.'); return; }
+  const recipients = getEmergencyRecipients();
+  if (!recipients.length) { toast('No recipients found.'); return; }
+  if (!confirm(
+    '🚨 EMERGENCY BROADCAST via Prepaid\n\n' +
+    '📨 '+recipients.length+' parents\n' +
+    '💰 ~₱'+recipients.length+' from your load\n\n' +
+    'Your SMS app opens for each parent — just tap Send each time.\n\nTap OK to start.'
+  )) return;
+  let idx=0;
+  function sendNext() {
+    if (idx>=recipients.length) { toast('✔ All '+recipients.length+' emergency messages queued!'); return; }
+    const s=recipients[idx];
+    const fullMsg=settings.replyNum?msg+' Reply/concerns: '+settings.replyNum:msg;
+    window.location.href='sms:'+s.phone+'?body='+encodeURIComponent(fullMsg);
+    idx++;
+    setTimeout(()=>{
+      if (idx<recipients.length) {
+        const nx=recipients[idx];
+        if (confirm('✔ '+idx+'/'+recipients.length+' sent\n\nNext: '+nx.name+'\n👤 '+(nx.parent||'—')+'\n📱 '+nx.phone+'\n\nContinue?')) sendNext();
+        else toast('Paused at '+idx+'/'+recipients.length+'. Tap Send ALL again to resume.');
+      } else toast('✔ All '+recipients.length+' done!');
+    },2000);
+  }
+  sendNext();
+}
+
+function exportBackup() {
+  const t1 = document.getElementById('msg-template');
+  const t2 = document.getElementById('msg-template-adviser');
+  const backup = {
+    version: 1,
+    exported: new Date().toISOString(),
+    students, attendance, settings, log, sectionNames, sectionInfo,
+    msgTemplate:    t1 ? t1.value : '',
+    msgTemplateAdv: t2 ? t2.value : ''
+  };
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(backup, null, 2)], {type:'application/json'}));
+  a.download = 'attendance_backup_' + new Date().toLocaleDateString('en-PH').replace(/\//g,'-') + '.json';
+  a.click();
+  toast('Backup exported! Send this file to your other device.');
+}
+
+function importBackup(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const backup = JSON.parse(ev.target.result);
+      if (!backup.version || !backup.students) { alert('Invalid backup file.'); return; }
+      const merge = confirm(
+        'Import backup from ' + (backup.exported ? new Date(backup.exported).toLocaleString('en-PH') : 'unknown date') + '?\n\n' +
+        '• ' + backup.students.length + ' students\n' +
+        '• ' + Object.keys(backup.attendance||{}).length + ' attendance records\n' +
+        '• ' + (backup.log||[]).length + ' log entries\n' +
+        '• ' + (backup.sectionNames||[]).length + ' sections\n\n' +
+        'This will REPLACE all current data. Continue?'
+      );
+      if (!merge) return;
+      students     = backup.students     || [];
+      attendance   = backup.attendance   || {};
+      settings     = backup.settings     || {};
+      log          = backup.log          || [];
+      sectionNames = backup.sectionNames || DEFAULT_SECTIONS;
+      sectionInfo  = backup.sectionInfo  || {};
+      // Restore message templates if present in backup
+      if (backup.msgTemplate)    localStorage.setItem('att4_msg_template',     backup.msgTemplate);
+      if (backup.msgTemplateAdv) localStorage.setItem('att4_msg_template_adv', backup.msgTemplateAdv);
+      save();
+      localStorage.setItem('att4_sections', JSON.stringify(sectionNames));
+      localStorage.setItem('att4_sectioninfo', JSON.stringify(sectionInfo));
+      localStorage.setItem('att4_settings', JSON.stringify(settings));
+      // Restore settings UI
+      if (settings.class)   document.getElementById('setup-class').value   = settings.class;
+      if (settings.teacher) document.getElementById('setup-teacher').value = settings.teacher;
+      if (settings.sy)      document.getElementById('setup-sy').value      = settings.sy;
+      if (settings.apikey)  document.getElementById('setup-apikey').value  = settings.apikey;
+      if (settings.autosms) document.getElementById('setup-autosms').checked = true;
+      currentSection = sectionNames[0] || '';
+      buildSectionSelectors();
+      buildSectionNameInputs();
+      renderStudents(); renderRoster(); renderLog(); renderOverview();
+      toast('✔ Backup imported! ' + students.length + ' students, ' + log.length + ' records.');
+    } catch(err) {
+      alert('Could not read backup file: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+function exportCSV() {
+  const rows=log.map(r=>`"${r.name}","${r.section||''}","${r.status}","${r.date}","${r.time}","${r.class}"`).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['Name,Section,Status,Date,Time,Class\n'+rows],{type:'text/csv'}));
+  a.download='attendance_log.csv'; a.click();
+}
+
+function exportSF2Json() {
+  if (!log.length) { toast('No attendance records to export.'); return; }
+  // Build records with gender from roster
+  const records = log.map(r => {
+    const s = students.find(x => x.name === r.name && x.section === r.section);
+    return {
+      name:    r.name,
+      section: r.section || '',
+      gender:  s ? (s.gender || 'male') : 'male',
+      status:  r.status,
+      date:    r.date,
+      time:    r.time,
+      class:   r.class || settings.class || ''
+    };
+  });
+  const blob = new Blob([JSON.stringify(records, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'attendance_sf2.json';
+  a.click();
+  toast('SF2 data exported! Run sf2_export.py to fill your SF2 file.');
+}
+function clearLog(){if(!confirm('Clear ALL log records across all sections and dates? This cannot be undone.'))return;log=[];save();renderLog();toast('All log records cleared.');}
+
+function clearFilteredLog() {
+  const secF  = document.getElementById('filter-log-section').value;
+  const dateF = document.getElementById('filter-log-date').value;
+
+  if (!secF && !dateF) {
+    toast('Please select a Section and/or Date filter first, then click Clear Filtered.');
+    return;
+  }
+
+  // Identify what will be deleted
+  const toDelete = log.filter(r => {
+    const secMatch  = !secF  || r.section === secF;
+    const dateMatch = !dateF || r.date === new Date(dateF).toLocaleDateString('en-PH');
+    return secMatch && dateMatch;
+  });
+
+  if (!toDelete.length) {
+    toast('No records match the current filter.');
+    return;
+  }
+
+  // Build a readable summary for the confirmation
+  const sectionLabel = secF  ? secF  : 'All Sections';
+  const dateLabel    = dateF ? new Date(dateF).toLocaleDateString('en-PH', {month:'long', day:'numeric', year:'numeric'}) : 'All Dates';
+  if (!confirm(
+    `Clear ${toDelete.length} record(s) for:\n` +
+    `📚 Section: ${sectionLabel}\n` +
+    `📅 Date: ${dateLabel}\n\n` +
+    `This also resets the attendance marks for those students so you can re-mark them.\n\n` +
+    `Continue?`
+  )) return;
+
+  // Remove matching records from log
+  log = log.filter(r => {
+    const secMatch  = !secF  || r.section === secF;
+    const dateMatch = !dateF || r.date === new Date(dateF).toLocaleDateString('en-PH');
+    return !(secMatch && dateMatch);
+  });
+
+  // Also reset attendance marks for those students
+  // (so they show as unmarked again in the Attendance tab)
+  toDelete.forEach(r => {
+    const key = attKey(r.section, r.name);
+    if (attendance[key]) delete attendance[key];
+  });
+
+  save();
+  renderLog();
+  renderStudents();
+  updateStats();
+  renderOverview();
+  toast('✔ ' + toDelete.length + ' record(s) cleared for ' + sectionLabel + ' · ' + dateLabel + '. Students are now unmarked — ready to re-mark.');
+}
+
+// ══════════════════════════════════════
+// OVERVIEW
+// ══════════════════════════════════════
+function renderOverview() {
+  const today  = getDate();
+  const tbody  = document.getElementById('overview-body');
+  const cards  = document.getElementById('section-overview');
+
+  const rows = sectionNames.map(sec => {
+    const secStudents = students.filter(s => s.section === sec);
+    const total = secStudents.length;
+    let p=0, ab=0, la=0;
+    secStudents.forEach(s => {
+      const a = attendance[attKey(sec, s.name)];
+      // Only count if attendance was marked today
+      if (a && a.date === today) {
+        if (a.status==='present') p++;
+        else if (a.status==='absent') ab++;
+        else if (a.status==='late') la++;
+      }
+    });
+    const unmarked = total - p - ab - la;
+    return {sec, total, p, ab, la, unmarked};
+  });
+
+  cards.innerHTML = rows.map(r => `
+    <div class="sec-card ${r.sec===currentSection?'active-sec':''}" onclick="jumpToSection('${esc(r.sec)}')">
+      <div class="sec-card-name">${r.sec}</div>
+      <div class="sec-card-stats">
+        <span style="color:var(--green);">✔${r.p}</span> &nbsp;
+        <span style="color:var(--amber-dark);">⏰${r.la}</span> &nbsp;
+        <span style="color:var(--red);">✘${r.ab}</span> &nbsp;
+        <span style="color:var(--text-muted);">?${r.unmarked}</span>
+      </div>
+    </div>`).join('');
+
+  tbody.innerHTML = rows.map(r => `<tr>
+    <td><strong>${r.sec}</strong></td>
+    <td>${r.total}</td>
+    <td style="color:var(--green);font-weight:600;">${r.p}</td>
+    <td style="color:var(--amber-dark);font-weight:600;">${r.la}</td>
+    <td style="color:var(--red);font-weight:600;">${r.ab}</td>
+    <td style="color:var(--text-muted);">${r.unmarked}</td>
+  </tr>`).join('');
+}
+
+function jumpToSection(sec) {
+  currentSection = sec;
+  document.getElementById('section-select').value = sec;
+  updateSectionPill();
+  switchTab('attendance');
+  renderStudents();
+}
+
+// ══ MONTHLY SUMMARY ══
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function buildMonthlyDropdown() {
+  const sel = document.getElementById('monthly-month');
+  if (!sel) return;
+  // Get unique months from log
+  const months = new Set();
+  log.forEach(r => {
+    const parts = r.date.split('/');
+    if (parts.length >= 3) months.add(parts[2]+'-'+parts[0].padStart(2,'0')); // YYYY-MM
+  });
+  // Also add current month
+  const now = new Date();
+  months.add(now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0'));
+  const sorted = [...months].sort().reverse();
+  sel.innerHTML = sorted.map(m => {
+    const [yr,mo] = m.split('-');
+    const label = MONTH_NAMES[parseInt(mo)-1] + ' ' + yr;
+    return `<option value="${m}">${label}</option>`;
+  }).join('');
+
+  // Populate section filter
+  const secSel = document.getElementById('monthly-section');
+  if (secSel) {
+    secSel.innerHTML = '<option value="">All Sections</option>' +
+      sectionNames.map(s=>`<option value="${s}">${s}</option>`).join('');
+  }
+}
+
+function renderMonthlyOverview() {
+  const sel    = document.getElementById('monthly-month');
+  const secSel = document.getElementById('monthly-section');
+  const secF   = secSel ? secSel.value : '';
+  if (!sel || !sel.value) return;
+
+  const [yr, mo] = sel.value.split('-');
+  const month = parseInt(mo);
+  const year  = parseInt(yr);
+
+  // Filter log for this month/year/section
+  const monthLog = log.filter(r => {
+    const parts = r.date.split('/');
+    if (parts.length < 3) return false;
+    return parseInt(parts[0]) === month && parseInt(parts[2]) === year
+      && (!secF || r.section === secF);
+  });
+
+  // DEDUP: keep only the LATEST entry per student per date
+  // (in case a student was re-marked multiple times on the same day)
+  const latestMap = {}; // key: "section|name|date" → latest record
+  monthLog.forEach(r => {
+    const k = r.section + '|' + r.name + '|' + r.date;
+    // log is in chronological order — later entries overwrite earlier ones
+    latestMap[k] = r;
+  });
+  const dedupedLog = Object.values(latestMap);
+
+  // Group by student+section
+  const studentMap = {};
+  dedupedLog.forEach(r => {
+    const k = r.section + '|' + r.name;
+    if (!studentMap[k]) studentMap[k] = { name:r.name, section:r.section, present:0, late:0, absent:0 };
+    if      (r.status==='present') studentMap[k].present++;
+    else if (r.status==='late')    studentMap[k].late++;
+    else if (r.status==='absent')  studentMap[k].absent++;
+  });
+
+  const tbody = document.getElementById('monthly-overview-body');
+  if (!Object.keys(studentMap).length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:24px;">No records for this month/section.</td></tr>';
+    return;
+  }
+
+  // Sort by section then name
+  const rows = Object.values(studentMap).sort((a,b) =>
+    a.section.localeCompare(b.section) || a.name.localeCompare(b.name)
+  );
+
+  tbody.innerHTML = rows.map(r => {
+    const total    = r.present + r.late + r.absent;
+    const pct      = total > 0 ? Math.round((r.present + r.late) / total * 100) : 0;
+    const pctColor = pct >= 90 ? 'var(--green)' : pct >= 75 ? 'var(--amber-dark)' : 'var(--red)';
+    const lateWarn = r.late >= 3 ? `<span style="color:var(--red);font-size:10px;"> ⚠</span>` : '';
+    return `<tr style="cursor:pointer;" onclick="showStudentProfile('${esc(r.name)}','${esc(r.section)}')" title="Click to view full record">
+      <td style="font-weight:600;font-size:12px;color:var(--blue);text-decoration:underline;">${r.name}</td>
+      <td><span class="pill" style="background:var(--green-light);color:var(--green-dark);font-size:10px;">${r.section}</span></td>
+      <td style="color:var(--green);font-weight:600;text-align:center;">${r.present}</td>
+      <td style="color:var(--amber-dark);font-weight:600;text-align:center;">${r.late}${lateWarn}</td>
+      <td style="color:var(--red);font-weight:600;text-align:center;">${r.absent}</td>
+      <td style="text-align:center;">${total}</td>
+      <td style="text-align:center;font-weight:700;color:${pctColor};">${pct}%</td>
+    </tr>`;
+  }).join('');
+}
+
+function exportMonthlyCSV() {
+  const sel    = document.getElementById('monthly-month');
+  const secSel = document.getElementById('monthly-section');
+  if (!sel || !sel.value) { toast('Select a month first.'); return; }
+  const [yr, mo] = sel.value.split('-');
+  const secF  = secSel ? secSel.value : '';
+  const month = parseInt(mo); const year = parseInt(yr);
+  const monthLabel = MONTH_NAMES[month-1]+' '+yr;
+
+  const monthLog = log.filter(r => {
+    const parts = r.date.split('/');
+    if (parts.length < 3) return false;
+    return parseInt(parts[0])===month && parseInt(parts[2])===year
+      && (!secF || r.section===secF);
+  });
+
+  // Dedup — latest entry per student per date
+  const latestMap = {};
+  monthLog.forEach(r => { latestMap[r.section+'|'+r.name+'|'+r.date] = r; });
+  const dedupedLog = Object.values(latestMap);
+
+  const studentMap = {};
+  dedupedLog.forEach(r => {
+    const k = r.section+'|'+r.name;
+    if (!studentMap[k]) studentMap[k]={name:r.name,section:r.section,present:0,late:0,absent:0};
+    if (r.status==='present') studentMap[k].present++;
+    else if (r.status==='late') studentMap[k].late++;
+    else if (r.status==='absent') studentMap[k].absent++;
+  });
+
+  const rows = Object.values(studentMap).sort((a,b)=>a.section.localeCompare(b.section)||a.name.localeCompare(b.name));
+  const csv = 'Student Name,Section,Present,Late,Absent,Total Days,Attendance %\n' +
+    rows.map(r => {
+      const total = r.present+r.late+r.absent;
+      const pct   = total>0 ? Math.round((r.present+r.late)/total*100) : 0;
+      return `"${r.name}","${r.section}",${r.present},${r.late},${r.absent},${total},${pct}%`;
+    }).join('\n');
+
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv'}));
+  a.download = `Monthly_Summary_${monthLabel.replace(' ','_')}${secF?'_'+secF:''}.csv`;
+  a.click();
+  toast('Monthly summary exported!');
+}
+
+// ══════════════════════════════════════
+// QR CODE
+// ══════════════════════════════════════
+function regenerateQR() {
+  const display = document.getElementById('qr-display');
+  display.innerHTML='';
+  const url = (settings.url&&settings.url.trim()) ? settings.url.trim() : window.location.href;
+  document.getElementById('qr-url-label').textContent=url;
+  try { new QRCode(display,{text:url,width:220,height:220,colorDark:'#085041',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H}); }
+  catch(e){ display.innerHTML='<div style="padding:20px;color:var(--text-muted);">Could not generate QR.</div>'; }
+}
+function downloadQR(){
+  const img=document.querySelector('#qr-display img')||document.querySelector('#qr-display canvas');
+  if(!img){toast('No QR yet.');return;}
+  const src=img.tagName==='CANVAS'?img.toDataURL():img.src;
+  const a=document.createElement('a');a.href=src;a.download='attendance_qr.png';a.click();
+}
+function printQR(){
+  const img=document.querySelector('#qr-display img')||document.querySelector('#qr-display canvas');
+  if(!img){toast('No QR yet.');return;}
+  const src=img.tagName==='CANVAS'?img.toDataURL():img.src;
+  const w=window.open('');
+  w.document.write(`<html><body style="text-align:center;padding:48px;font-family:sans-serif;">
+    <h2 style="color:#085041;">${settings.class||'Attendance'}</h2>
+    <p style="color:#888;">${settings.teacher||''} &nbsp;|&nbsp; ${settings.sy||''}</p>
+    <p style="color:#aaa;font-size:13px;margin-bottom:20px;">Scan to open attendance sheet</p>
+    <img src="${src}" style="width:260px;height:260px;border:6px solid #fff;box-shadow:0 2px 20px rgba(0,0,0,.15);border-radius:12px;"/>
+  </body></html>`);
+  setTimeout(()=>w.print(),500);
+}
+
+// ══════════════════════════════════════
+// SEMAPHORE SMS
+// ══════════════════════════════════════
+// ══ SEMAPHORE SMS — uses form POST to bypass CORS ══
+function semaphorePost(phone, message, callback) {
+  const apikey  = settings.apikey;
+  const sender  = settings.sender || 'SEMAPHORE';
+  const number  = phone.replace(/\D/g, '');
+
+  // Create a hidden iframe to receive the response
+  const iframeId = 'sms_iframe_' + Date.now();
+  const formId   = 'sms_form_' + Date.now();
+
+  const iframe = document.createElement('iframe');
+  iframe.name  = iframeId;
+  iframe.id    = iframeId;
+  iframe.style.display = 'none';
+  document.body.appendChild(iframe);
+
+  const form = document.createElement('form');
+  form.method  = 'POST';
+  form.action  = 'https://api.semaphore.co/api/v4/messages';
+  form.target  = iframeId;
+  form.id      = formId;
+  form.style.display = 'none';
+
+  const fields = { apikey, number, message, sendername: sender };
+  Object.entries(fields).forEach(([k,v]) => {
+    const input = document.createElement('input');
+    input.type  = 'hidden';
+    input.name  = k;
+    input.value = v;
+    form.appendChild(input);
+  });
+
+  document.body.appendChild(form);
+
+  // Clean up after submit
+  iframe.onload = function() {
+    setTimeout(() => {
+      try { document.body.removeChild(iframe); } catch(e){}
+      try { document.body.removeChild(form);   } catch(e){}
+    }, 3000);
+    if (callback) callback(true);
+  };
+
+  form.submit();
+}
+
+async function sendSemaphoreSMS(student, status, time, isTest=false) {
+  const phone   = student.phone.replace(/\D/g,'');
+  const message = isTest
+    ? 'Test message from your Attendance System. Semaphore is working!'
+    : buildMsg(student, status, time);
+  const key     = attKey(student.section, student.name);
+
+  if (!isTest && attendance[key]) {
+    attendance[key].smsSending = true;
+    renderStudents();
+  }
+  toast('📡 Sending SMS to ' + (student.parent || student.name) + '…');
+
+  try {
+    // Try fetch first (works when CORS is allowed)
+    const res  = await fetch('https://api.semaphore.co/api/v4/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        apikey:     settings.apikey,
+        number:     phone,
+        message,
+        sendername: settings.sender || 'SEMAPHORE'
+      })
+    });
+    const data = await res.json();
+    if (!isTest && attendance[key]) {
+      attendance[key].smsSending = false;
+      if (res.ok && !data.error) {
+        attendance[key].smsSent   = true;
+        attendance[key].smsFailed = false;
+        save(); toast('✔ SMS sent to ' + (student.parent || student.name));
+      } else {
+        attendance[key].smsFailed = true;
+        attendance[key].smsSent   = false;
+        save(); toast('✘ SMS failed: ' + (data.message || 'Error'));
+      }
+      renderStudents();
+    } else if (isTest) {
+      alert(res.ok ? '✔ Test SMS sent! Check your phone.' : '✘ Failed: ' + (data.message || JSON.stringify(data)));
+    }
+  } catch(e) {
+    // Fetch blocked by CORS — fall back to form POST method
+    toast('📡 Using alternate send method…');
+    if (!isTest && attendance[key]) {
+      attendance[key].smsSending = false;
+    }
+    semaphorePost(phone, message, (ok) => {
+      if (!isTest && attendance[key]) {
+        attendance[key].smsSent   = true;
+        attendance[key].smsFailed = false;
+        save(); renderStudents();
+        toast('✔ SMS sent to ' + (student.parent || student.name));
+      } else if (isTest) {
+        alert('✔ SMS submitted! Check your phone in a few seconds.\n\nIf you do not receive it, verify your API key and sender name at semaphore.co');
+      }
+    });
+  }
+}
+
+async function testSemaphore() {
+  const apikey = document.getElementById('setup-apikey').value.trim();
+  const phone  = document.getElementById('setup-testphone').value.trim();
+  if (!apikey) { alert('Please paste your Semaphore API key first.'); return; }
+  if (!phone)  { alert('Please enter your phone number for the test.'); return; }
+  toast('📡 Sending test SMS…');
+  await sendSemaphoreSMS(
+    {name:'Test', parent:'Teacher', phone, section:'Test'},
+    null, getTime(), true
+  );
+}
+
+// ══════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════
+function closeModal(id){document.getElementById(id).classList.remove('open');modalTarget=null;}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',2800);}
+function esc(s){return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
+
+document.getElementById('modal-status').addEventListener('click',function(e){if(e.target===this)closeModal('modal-status');});
+// ══ STUDENT PROFILE ══
+let profileStudent = null;
+let profileSection = null;
+
+function showStudentProfile(name, section) {
+  profileStudent = name;
+  profileSection = section;
+
+  const s = students.find(x => x.name === name && x.section === section);
+  document.getElementById('profile-name').textContent = name;
+  document.getElementById('profile-meta').textContent =
+    '📚 ' + section + (s ? '  👤 ' + (s.parent||'—') + '  📱 ' + (s.phone||'—') : '');
+
+  // Build month filter options from this student's records
+  const studentLog = log.filter(r => r.name === name && r.section === section);
+  const months = new Set();
+  studentLog.forEach(r => {
+    const parts = r.date.split('/');
+    if (parts.length >= 3) months.add(parts[2]+'-'+parts[0].padStart(2,'0'));
+  });
+  const sel = document.getElementById('profile-month-filter');
+  sel.innerHTML = '<option value="">All Months</option>' +
+    [...months].sort().reverse().map(m => {
+      const [yr,mo] = m.split('-');
+      return `<option value="${m}">${MONTH_NAMES[parseInt(mo)-1]} ${yr}</option>`;
+    }).join('');
+
+  renderProfileRecords();
+  document.getElementById('modal-profile').classList.add('open');
+}
+
+function renderProfileRecords() {
+  const name    = profileStudent;
+  const section = profileSection;
+  const monthF  = document.getElementById('profile-month-filter').value;
+
+  // Get all records for this student — deduped by latest per date
+  const allRecs = log.filter(r => r.name === name && r.section === section);
+  const latestMap = {};
+  allRecs.forEach(r => { latestMap[r.date] = r; });
+  let records = Object.values(latestMap).sort((a,b) => {
+    // Sort by date descending
+    const da = new Date(a.date.split('/')[2]+'-'+a.date.split('/')[0].padStart(2,'0')+'-'+a.date.split('/')[1].padStart(2,'0'));
+    const db = new Date(b.date.split('/')[2]+'-'+b.date.split('/')[0].padStart(2,'0')+'-'+b.date.split('/')[1].padStart(2,'0'));
+    return db - da;
+  });
+
+  // Apply month filter
+  if (monthF) {
+    const [yr,mo] = monthF.split('-');
+    records = records.filter(r => {
+      const parts = r.date.split('/');
+      return parts.length >= 3 && parseInt(parts[0])===parseInt(mo) && parseInt(parts[2])===parseInt(yr);
+    });
+  }
+
+  // Summary stats
+  const present = records.filter(r=>r.status==='present').length;
+  const late    = records.filter(r=>r.status==='late').length;
+  const absent  = records.filter(r=>r.status==='absent').length;
+  const total   = records.length;
+  const pct     = total > 0 ? Math.round((present+late)/total*100) : 0;
+  const pctColor= pct>=90?'var(--green)':pct>=75?'var(--amber-dark)':'var(--red)';
+
+  document.getElementById('profile-stats').innerHTML = `
+    <div style="background:var(--green-light);border-radius:8px;padding:8px;text-align:center;">
+      <div style="font-size:18px;font-weight:700;color:var(--green);">${present}</div>
+      <div style="font-size:10px;color:var(--green-dark);">Present</div>
+    </div>
+    <div style="background:var(--amber-light);border-radius:8px;padding:8px;text-align:center;">
+      <div style="font-size:18px;font-weight:700;color:var(--amber-dark);">${late}</div>
+      <div style="font-size:10px;color:var(--amber-dark);">Late</div>
+    </div>
+    <div style="background:var(--red-light);border-radius:8px;padding:8px;text-align:center;">
+      <div style="font-size:18px;font-weight:700;color:var(--red);">${absent}</div>
+      <div style="font-size:10px;color:var(--red);">Absent</div>
+    </div>
+    <div style="background:var(--gray-light);border-radius:8px;padding:8px;text-align:center;">
+      <div style="font-size:18px;font-weight:700;color:${pctColor};">${pct}%</div>
+      <div style="font-size:10px;color:var(--text-muted);">Attendance</div>
+    </div>`;
+
+  const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const sc = {present:'#E1F5EE',late:'#FAEEDA',absent:'#FCEBEB'};
+  const tc = {present:'#085041',late:'#633806',absent:'#A32D2D'};
+  const icons = {present:'✔',late:'⏰',absent:'✘'};
+
+  const tbody = document.getElementById('profile-records');
+  if (!records.length) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:20px;">No records found.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = records.map(r => {
+    const parts = r.date.split('/');
+    const dayName = parts.length>=3 ? DAYS[new Date(parts[2]+'-'+parts[0].padStart(2,'0')+'-'+parts[1].padStart(2,'0')).getDay()] : '—';
+    return `<tr>
+      <td style="font-size:12px;font-weight:600;">${r.date}</td>
+      <td style="font-size:12px;color:var(--text-muted);">${dayName}</td>
+      <td><span class="pill" style="background:${sc[r.status]};color:${tc[r.status]};">${icons[r.status]} ${r.status}</span></td>
+      <td style="font-size:12px;color:var(--text-muted);">${r.time||'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+document.getElementById('modal-profile').addEventListener('click',function(e){if(e.target===this)closeModal('modal-profile');});
+
+try { init(); } catch(e) { console.error('Init error:', e); document.body.innerHTML += '<div style="position:fixed;bottom:0;left:0;right:0;background:#A32D2D;color:#fff;padding:12px;font-size:12px;z-index:9999;">⚠ App error: '+e.message+'. Please refresh the page.</div>'; }
+</script>
+</body>
+</html>
