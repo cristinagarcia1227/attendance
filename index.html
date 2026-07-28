@@ -757,7 +757,7 @@ textarea{resize:vertical;min-height:70px;}
 // ══════════════════════════════════════
 // DEFAULT SECTION NAMES
 // ══════════════════════════════════════
-const APP_VERSION     = '1.1.2';
+const APP_VERSION     = '1.1.3';
 const UPDATE_CHECK_URL = 'https://cristinagarcia1227.github.io/attendance/version.json';
 const DEFAULT_SECTIONS = ['Section 1'];
 
@@ -2540,4 +2540,401 @@ function renderMonthlyOverview() {
   const sel    = document.getElementById('monthly-month');
   const secSel = document.getElementById('monthly-section');
   const secF   = secSel ? secSel.value : '';
-  if (!sel || !sel.value) retur
+  if (!sel || !sel.value) return;
+
+  const [yr, mo] = sel.value.split('-');
+  const month = parseInt(mo);
+  const year  = parseInt(yr);
+
+  // Filter log for this month/year/section
+  const monthLog = log.filter(r => {
+    const parts = r.date.split('/');
+    if (parts.length < 3) return false;
+    return parseInt(parts[0]) === month && parseInt(parts[2]) === year
+      && (!secF || r.section === secF);
+  });
+
+  // DEDUP: keep only the LATEST entry per student per date
+  // (in case a student was re-marked multiple times on the same day)
+  const latestMap = {}; // key: "section|name|date" → latest record
+  monthLog.forEach(r => {
+    const k = r.section + '|' + r.name + '|' + r.date;
+    // log is in chronological order — later entries overwrite earlier ones
+    latestMap[k] = r;
+  });
+  const dedupedLog = Object.values(latestMap);
+
+  // Group by student+section
+  const studentMap = {};
+  dedupedLog.forEach(r => {
+    const k = r.section + '|' + r.name;
+    if (!studentMap[k]) studentMap[k] = { name:r.name, section:r.section, present:0, late:0, absent:0 };
+    if      (r.status==='present') studentMap[k].present++;
+    else if (r.status==='late')    studentMap[k].late++;
+    else if (r.status==='absent')  studentMap[k].absent++;
+  });
+
+  const tbody = document.getElementById('monthly-overview-body');
+  if (!Object.keys(studentMap).length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:24px;">No records for this month/section.</td></tr>';
+    return;
+  }
+
+  // Sort by section then name
+  const rows = Object.values(studentMap).sort((a,b) =>
+    a.section.localeCompare(b.section) || a.name.localeCompare(b.name)
+  );
+
+  tbody.innerHTML = rows.map(r => {
+    const total    = r.present + r.late + r.absent;
+    const pct      = total > 0 ? Math.round((r.present + r.late) / total * 100) : 0;
+    const pctColor = pct >= 90 ? 'var(--green)' : pct >= 75 ? 'var(--amber-dark)' : 'var(--red)';
+    const lateWarn = r.late >= 3 ? `<span style="color:var(--red);font-size:10px;"> ⚠</span>` : '';
+    return `<tr style="cursor:pointer;" onclick="showStudentProfile('${esc(r.name)}','${esc(r.section)}')" title="Click to view full record">
+      <td style="font-weight:600;font-size:12px;color:var(--blue);text-decoration:underline;">${r.name}</td>
+      <td><span class="pill" style="background:var(--green-light);color:var(--green-dark);font-size:10px;">${r.section}</span></td>
+      <td style="color:var(--green);font-weight:600;text-align:center;">${r.present}</td>
+      <td style="color:var(--amber-dark);font-weight:600;text-align:center;">${r.late}${lateWarn}</td>
+      <td style="color:var(--red);font-weight:600;text-align:center;">${r.absent}</td>
+      <td style="text-align:center;">${total}</td>
+      <td style="text-align:center;font-weight:700;color:${pctColor};">${pct}%</td>
+    </tr>`;
+  }).join('');
+}
+
+function exportMonthlyCSV() {
+  const sel    = document.getElementById('monthly-month');
+  const secSel = document.getElementById('monthly-section');
+  if (!sel || !sel.value) { toast('Select a month first.'); return; }
+  const [yr, mo] = sel.value.split('-');
+  const secF  = secSel ? secSel.value : '';
+  const month = parseInt(mo); const year = parseInt(yr);
+  const monthLabel = MONTH_NAMES[month-1]+' '+yr;
+
+  const monthLog = log.filter(r => {
+    const parts = r.date.split('/');
+    if (parts.length < 3) return false;
+    return parseInt(parts[0])===month && parseInt(parts[2])===year
+      && (!secF || r.section===secF);
+  });
+
+  // Dedup — latest entry per student per date
+  const latestMap = {};
+  monthLog.forEach(r => { latestMap[r.section+'|'+r.name+'|'+r.date] = r; });
+  const dedupedLog = Object.values(latestMap);
+
+  const studentMap = {};
+  dedupedLog.forEach(r => {
+    const k = r.section+'|'+r.name;
+    if (!studentMap[k]) studentMap[k]={name:r.name,section:r.section,present:0,late:0,absent:0};
+    if (r.status==='present') studentMap[k].present++;
+    else if (r.status==='late') studentMap[k].late++;
+    else if (r.status==='absent') studentMap[k].absent++;
+  });
+
+  const rows = Object.values(studentMap).sort((a,b)=>a.section.localeCompare(b.section)||a.name.localeCompare(b.name));
+  const csv = 'Student Name,Section,Present,Late,Absent,Total Days,Attendance %\n' +
+    rows.map(r => {
+      const total = r.present+r.late+r.absent;
+      const pct   = total>0 ? Math.round((r.present+r.late)/total*100) : 0;
+      return `"${r.name}","${r.section}",${r.present},${r.late},${r.absent},${total},${pct}%`;
+    }).join('\n');
+
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv'}));
+  a.download = `Monthly_Summary_${monthLabel.replace(' ','_')}${secF?'_'+secF:''}.csv`;
+  a.click();
+  toast('Monthly summary exported!');
+}
+
+// ══════════════════════════════════════
+// QR CODE
+// ══════════════════════════════════════
+function regenerateQR() {
+  const display = document.getElementById('qr-display');
+  display.innerHTML='';
+  const url = (settings.url&&settings.url.trim()) ? settings.url.trim() : window.location.href;
+  document.getElementById('qr-url-label').textContent=url;
+  try { new QRCode(display,{text:url,width:220,height:220,colorDark:'#085041',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H}); }
+  catch(e){ display.innerHTML='<div style="padding:20px;color:var(--text-muted);">Could not generate QR.</div>'; }
+}
+function downloadQR(){
+  const img=document.querySelector('#qr-display img')||document.querySelector('#qr-display canvas');
+  if(!img){toast('No QR yet.');return;}
+  const src=img.tagName==='CANVAS'?img.toDataURL():img.src;
+  const a=document.createElement('a');a.href=src;a.download='attendance_qr.png';a.click();
+}
+function printQR(){
+  const img=document.querySelector('#qr-display img')||document.querySelector('#qr-display canvas');
+  if(!img){toast('No QR yet.');return;}
+  const src=img.tagName==='CANVAS'?img.toDataURL():img.src;
+  const w=window.open('');
+  w.document.write(`<html><body style="text-align:center;padding:48px;font-family:sans-serif;">
+    <h2 style="color:#085041;">${settings.class||'Attendance'}</h2>
+    <p style="color:#888;">${settings.teacher||''} &nbsp;|&nbsp; ${settings.sy||''}</p>
+    <p style="color:#aaa;font-size:13px;margin-bottom:20px;">Scan to open attendance sheet</p>
+    <img src="${src}" style="width:260px;height:260px;border:6px solid #fff;box-shadow:0 2px 20px rgba(0,0,0,.15);border-radius:12px;"/>
+  </body></html>`);
+  setTimeout(()=>w.print(),500);
+}
+
+// ══════════════════════════════════════
+// SEMAPHORE SMS
+// ══════════════════════════════════════
+// ══ SEMAPHORE SMS — uses form POST to bypass CORS ══
+function semaphorePost(phone, message, callback) {
+  const apikey  = settings.apikey;
+  const sender  = settings.sender || 'SEMAPHORE';
+  const number  = phone.replace(/\D/g, '');
+
+  // Create a hidden iframe to receive the response
+  const iframeId = 'sms_iframe_' + Date.now();
+  const formId   = 'sms_form_' + Date.now();
+
+  const iframe = document.createElement('iframe');
+  iframe.name  = iframeId;
+  iframe.id    = iframeId;
+  iframe.style.display = 'none';
+  document.body.appendChild(iframe);
+
+  const form = document.createElement('form');
+  form.method  = 'POST';
+  form.action  = 'https://api.semaphore.co/api/v4/messages';
+  form.target  = iframeId;
+  form.id      = formId;
+  form.style.display = 'none';
+
+  const fields = { apikey, number, message, sendername: sender };
+  Object.entries(fields).forEach(([k,v]) => {
+    const input = document.createElement('input');
+    input.type  = 'hidden';
+    input.name  = k;
+    input.value = v;
+    form.appendChild(input);
+  });
+
+  document.body.appendChild(form);
+
+  // Clean up after submit
+  iframe.onload = function() {
+    setTimeout(() => {
+      try { document.body.removeChild(iframe); } catch(e){}
+      try { document.body.removeChild(form);   } catch(e){}
+    }, 3000);
+    if (callback) callback(true);
+  };
+
+  form.submit();
+}
+
+async function sendSemaphoreSMS(student, status, time, isTest=false) {
+  const phone   = student.phone.replace(/\D/g,'');
+  const message = isTest
+    ? 'Test message from your Attendance System. Semaphore is working!'
+    : buildMsg(student, status, time);
+  const key     = attKey(student.section, student.name);
+
+  if (!isTest && attendance[key]) {
+    attendance[key].smsSending = true;
+    renderStudents();
+  }
+  toast('📡 Sending SMS to ' + (student.parent || student.name) + '…');
+
+  try {
+    // Try fetch first (works when CORS is allowed)
+    const res  = await fetch('https://api.semaphore.co/api/v4/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        apikey:     settings.apikey,
+        number:     phone,
+        message,
+        sendername: settings.sender || 'SEMAPHORE'
+      })
+    });
+    const data = await res.json();
+    if (!isTest && attendance[key]) {
+      attendance[key].smsSending = false;
+      if (res.ok && !data.error) {
+        attendance[key].smsSent   = true;
+        attendance[key].smsFailed = false;
+        save(); toast('✔ SMS sent to ' + (student.parent || student.name));
+      } else {
+        attendance[key].smsFailed = true;
+        attendance[key].smsSent   = false;
+        save(); toast('✘ SMS failed: ' + (data.message || 'Error'));
+      }
+      renderStudents();
+    } else if (isTest) {
+      alert(res.ok ? '✔ Test SMS sent! Check your phone.' : '✘ Failed: ' + (data.message || JSON.stringify(data)));
+    }
+  } catch(e) {
+    // Fetch blocked by CORS — fall back to form POST method
+    toast('📡 Using alternate send method…');
+    if (!isTest && attendance[key]) {
+      attendance[key].smsSending = false;
+    }
+    semaphorePost(phone, message, (ok) => {
+      if (!isTest && attendance[key]) {
+        attendance[key].smsSent   = true;
+        attendance[key].smsFailed = false;
+        save(); renderStudents();
+        toast('✔ SMS sent to ' + (student.parent || student.name));
+      } else if (isTest) {
+        alert('✔ SMS submitted! Check your phone in a few seconds.\n\nIf you do not receive it, verify your API key and sender name at semaphore.co');
+      }
+    });
+  }
+}
+
+async function testSemaphore() {
+  const apikey = document.getElementById('setup-apikey').value.trim();
+  const phone  = document.getElementById('setup-testphone').value.trim();
+  if (!apikey) { alert('Please paste your Semaphore API key first.'); return; }
+  if (!phone)  { alert('Please enter your phone number for the test.'); return; }
+  toast('📡 Sending test SMS…');
+  await sendSemaphoreSMS(
+    {name:'Test', parent:'Teacher', phone, section:'Test'},
+    null, getTime(), true
+  );
+}
+
+// ══════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════
+function closeModal(id){document.getElementById(id).classList.remove('open');modalTarget=null;}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',2800);}
+function esc(s){return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
+
+document.getElementById('modal-status').addEventListener('click',function(e){if(e.target===this)closeModal('modal-status');});
+// ══ STUDENT PROFILE ══
+let profileStudent = null;
+let profileSection = null;
+
+function showExcusedReason() {
+  const box = document.getElementById('excused-reason-box');
+  const inp = document.getElementById('excused-reason-input');
+  if (box) { box.style.display='block'; if(inp) inp.focus(); }
+}
+
+function setStatusExcused() {
+  const inp = document.getElementById('excused-reason-input');
+  const reason = inp ? inp.value.trim() : '';
+  if (!reason) { toast('Please enter a reason for the excused absence.'); return; }
+  // Hide reason box and reset for next use
+  const box = document.getElementById('excused-reason-box');
+  if (box) box.style.display = 'none';
+  if (inp) inp.value = '';
+  setStatus('excused', reason);
+}
+
+function showStudentProfile(name, section) {
+  return openProfileModal(name, section);
+}
+
+function openProfileModal(name, section) {
+  profileStudent = name;
+  profileSection = section;
+
+  const s = students.find(x => x.name === name && x.section === section);
+  document.getElementById('profile-name').textContent = name;
+  document.getElementById('profile-meta').textContent =
+    '📚 ' + section + (s ? '  👤 ' + (s.parent||'—') + '  📱 ' + (s.phone||'—') : '');
+
+  // Build month filter options from this student's records
+  const studentLog = log.filter(r => r.name === name && r.section === section);
+  const months = new Set();
+  studentLog.forEach(r => {
+    const parts = r.date.split('/');
+    if (parts.length >= 3) months.add(parts[2]+'-'+parts[0].padStart(2,'0'));
+  });
+  const sel = document.getElementById('profile-month-filter');
+  sel.innerHTML = '<option value="">All Months</option>' +
+    [...months].sort().reverse().map(m => {
+      const [yr,mo] = m.split('-');
+      return `<option value="${m}">${MONTH_NAMES[parseInt(mo)-1]} ${yr}</option>`;
+    }).join('');
+
+  renderProfileRecords();
+  document.getElementById('modal-profile').classList.add('open');
+}
+
+function renderProfileRecords() {
+  const name    = profileStudent;
+  const section = profileSection;
+  const monthF  = document.getElementById('profile-month-filter').value;
+
+  // Get all records for this student — deduped by latest per date
+  const allRecs = log.filter(r => r.name === name && r.section === section);
+  const latestMap = {};
+  allRecs.forEach(r => { latestMap[r.date] = r; });
+  let records = Object.values(latestMap).sort((a,b) => {
+    // Sort by date descending
+    const da = new Date(a.date.split('/')[2]+'-'+a.date.split('/')[0].padStart(2,'0')+'-'+a.date.split('/')[1].padStart(2,'0'));
+    const db = new Date(b.date.split('/')[2]+'-'+b.date.split('/')[0].padStart(2,'0')+'-'+b.date.split('/')[1].padStart(2,'0'));
+    return db - da;
+  });
+
+  // Apply month filter
+  if (monthF) {
+    const [yr,mo] = monthF.split('-');
+    records = records.filter(r => {
+      const parts = r.date.split('/');
+      return parts.length >= 3 && parseInt(parts[0])===parseInt(mo) && parseInt(parts[2])===parseInt(yr);
+    });
+  }
+
+  // Summary stats
+  const present = records.filter(r=>r.status==='present').length;
+  const late    = records.filter(r=>r.status==='late').length;
+  const absent  = records.filter(r=>r.status==='absent').length;
+  const total   = records.length;
+  const pct     = total > 0 ? Math.round((present+late)/total*100) : 0;
+  const pctColor= pct>=90?'var(--green)':pct>=75?'var(--amber-dark)':'var(--red)';
+
+  document.getElementById('profile-stats').innerHTML = `
+    <div style="background:var(--green-light);border-radius:8px;padding:8px;text-align:center;">
+      <div style="font-size:18px;font-weight:700;color:var(--green);">${present}</div>
+      <div style="font-size:10px;color:var(--green-dark);">Present</div>
+    </div>
+    <div style="background:var(--amber-light);border-radius:8px;padding:8px;text-align:center;">
+      <div style="font-size:18px;font-weight:700;color:var(--amber-dark);">${late}</div>
+      <div style="font-size:10px;color:var(--amber-dark);">Late</div>
+    </div>
+    <div style="background:var(--red-light);border-radius:8px;padding:8px;text-align:center;">
+      <div style="font-size:18px;font-weight:700;color:var(--red);">${absent}</div>
+      <div style="font-size:10px;color:var(--red);">Absent</div>
+    </div>
+    <div style="background:var(--gray-light);border-radius:8px;padding:8px;text-align:center;">
+      <div style="font-size:18px;font-weight:700;color:${pctColor};">${pct}%</div>
+      <div style="font-size:10px;color:var(--text-muted);">Attendance</div>
+    </div>`;
+
+  const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const sc = {present:'#E1F5EE',late:'#FAEEDA',absent:'#FCEBEB'};
+  const tc = {present:'#085041',late:'#633806',absent:'#A32D2D'};
+  const icons = {present:'✔',late:'⏰',absent:'✘'};
+
+  const tbody = document.getElementById('profile-records');
+  if (!records.length) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:20px;">No records found.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = records.map(r => {
+    const parts = r.date.split('/');
+    const dayName = parts.length>=3 ? DAYS[new Date(parts[2]+'-'+parts[0].padStart(2,'0')+'-'+parts[1].padStart(2,'0')).getDay()] : '—';
+    return `<tr>
+      <td style="font-size:12px;font-weight:600;">${r.date}</td>
+      <td style="font-size:12px;color:var(--text-muted);">${dayName}</td>
+      <td><span class="pill" style="background:${sc[r.status]};color:${tc[r.status]};">${icons[r.status]} ${r.status}</span></td>
+      <td style="font-size:12px;color:var(--text-muted);">${r.time||'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+document.getElementById('modal-profile').addEventListener('click',function(e){if(e.target===this)closeModal('modal-profile');});
+
+try { init(); } catch(e) { console.error('Init error:', e); document.body.innerHTML += '<div style="position:fixed;bottom:0;left:0;right:0;background:#A32D2D;color:#fff;padding:12px;font-size:12px;z-index:9999;">⚠ App error: '+e.message+'. Please refresh the page.</div>'; }
+</script>
+</body>
+</html>
