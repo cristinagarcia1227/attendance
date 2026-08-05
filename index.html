@@ -487,6 +487,7 @@ textarea{resize:vertical;min-height:70px;}
     <div style="display:flex;gap:8px;flex-wrap:wrap;">
       <button class="btn btn-green" onclick="addNewSection()">＋ Add Section</button>
       <button class="btn btn-green" onclick="saveSectionNames()">💾 Save Sections</button>
+      <button class="btn btn-outline" onclick="openArchiveModal()">📦 View Archived Sections</button>
     </div>
   </div>
 
@@ -736,6 +737,18 @@ textarea{resize:vertical;min-height:70px;}
   <span id="undo-msg">Marked as absent</span>
   <button onclick="undoLastMark()" style="background:var(--amber);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;">↩ Undo</button>
 </div>
+<!-- MODAL: ARCHIVED SECTIONS -->
+<div class="modal-overlay" id="modal-archive" style="align-items:flex-start;overflow-y:auto;padding:20px 0;">
+  <div class="modal" style="max-width:480px;width:92%;margin:auto;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <h3 style="font-size:15px;color:var(--text);">📦 Archived Sections</h3>
+      <button class="btn btn-outline" style="padding:5px 10px;" onclick="closeModal('modal-archive')">✕</button>
+    </div>
+    <p style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">Archived sections are hidden from active lists (Attendance, Roster filters, Add Student, etc.) but their students and attendance history are kept for reference. Restore anytime.</p>
+    <div id="archive-list"></div>
+  </div>
+</div>
+
 <!-- MODAL: TEACHER WAS AWAY -->
 <div class="modal-overlay" id="modal-teacher-away" style="align-items:flex-start;overflow-y:auto;padding:20px 0;">
   <div class="modal" style="max-width:480px;width:92%;margin:auto;">
@@ -790,7 +803,7 @@ textarea{resize:vertical;min-height:70px;}
 // ══════════════════════════════════════
 // DEFAULT SECTION NAMES
 // ══════════════════════════════════════
-const APP_VERSION     = '1.3.0';
+const APP_VERSION     = '1.4.0';
 const UPDATE_CHECK_URL = 'https://cristinagarcia1227.github.io/attendance/version.json';
 const DEFAULT_SECTIONS = ['Section 1'];
 
@@ -804,6 +817,7 @@ let log        = [];
 let sectionNames = [...DEFAULT_SECTIONS];
 let sectionInfo  = {}; // { "Section Name": {schedule, adviser, adviserPhone, notifyAdviser} }
 let teacherAwaySent = {}; // { "date|section|name": true } and { "date|section|adviser": true }
+let archivedSections = []; // [{name, schedule, adviser, adviserPhone, notifyAdviser, studentCount, archivedDate}]
 let currentSection = '';
 let msgFilter = 'all';
 let smsMode = 'prepaid'; // 'prepaid' or 'semaphore'
@@ -844,6 +858,7 @@ function loadStorage() {
     sectionNames = savedSections ? JSON.parse(savedSections) : [...DEFAULT_SECTIONS];
     sectionInfo  = JSON.parse(localStorage.getItem('att4_sectioninfo') || '{}');
     teacherAwaySent = JSON.parse(localStorage.getItem('att4_teacherawaysent') || '{}');
+    archivedSections = JSON.parse(localStorage.getItem('att4_archivedsections') || '[]');
     currentSection = sectionNames[0] || '';
     const setVal = (id, val) => { const el=document.getElementById(id); if(el&&val) el.value=val; };
     setVal('setup-class',   settings.class);
@@ -916,11 +931,24 @@ function saveTemplates() {
 
 function loadTemplates() {
   const saved1 = localStorage.getItem('att4_msg_template');
-  const saved2 = localStorage.getItem('att4_msg_template_adv');
+  let   saved2 = localStorage.getItem('att4_msg_template_adv');
   const t1 = document.getElementById('msg-template');
   const t2 = document.getElementById('msg-template-adviser');
   if (t1 && saved1) t1.value = saved1;
-  if (t2 && saved2) t2.value = saved2;
+  if (t2 && saved2) {
+    if (!saved2.includes('{excused}')) {
+      // Old template saved before "Excused" support existed — auto-upgrade it
+      if (saved2.includes('{late} Late.') && saved2.includes('{latenames}')) {
+        saved2 = saved2.replace('{late} Late.', '{late} Late, {excused} Excused.')
+                        .replace('{latenames}', '{latenames}{excusednames}');
+      } else {
+        saved2 = saved2 + ' {excused} Excused.{excusednames}';
+      }
+      localStorage.setItem('att4_msg_template_adv', saved2);
+      setTimeout(() => toast('ℹ️ Your adviser message template was updated to include Excused students.'), 1200);
+    }
+    t2.value = saved2;
+  }
 }
 
 // ══════════════════════════════════════
@@ -986,6 +1014,7 @@ function buildSectionNameInputs() {
     return `<div style="border:1.5px solid var(--gray-border);border-radius:8px;padding:10px;">
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
         <input type="text" id="secname-${i}" value="${s}" placeholder="e.g. Sampaguita" style="flex:1;font-weight:600;" oninput="renameSectionLive(${i})"/>
+        <button class="btn btn-outline" style="padding:6px 10px;flex-shrink:0;" onclick="archiveSection(${i})" title="Archive this section (keep data, hide from active lists)">📦</button>
         <button class="btn btn-red" style="padding:6px 10px;flex-shrink:0;" onclick="removeSection(${i})" title="Remove section">✕</button>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
@@ -1041,6 +1070,90 @@ function removeSection(idx) {
   buildSectionNameInputs();
   renderStudents(); renderRoster(); renderOverview();
   toast('Section removed.');
+}
+
+function archiveSection(idx) {
+  const name = sectionNames[idx];
+  const count = students.filter(s => s.section === name && !s.archived).length;
+  if (!confirm(`Archive "${name}"? It will be hidden from active lists (Attendance, Roster, Add Student, etc.), but ${count} student(s) and all attendance history will be kept — you can restore it anytime from "View Archived Sections".`)) return;
+
+  const info = sectionInfo[name] || {};
+  // remove any existing archived entry with same name first (avoid dupes if re-archiving)
+  archivedSections = archivedSections.filter(a => a.name !== name);
+  archivedSections.push({
+    name,
+    schedule: info.schedule || '',
+    adviser: info.adviser || '',
+    adviserPhone: info.adviserPhone || '',
+    notifyAdviser: !!info.notifyAdviser,
+    studentCount: count,
+    archivedDate: getDate()
+  });
+
+  students = students.map(s => s.section === name ? {...s, archived: true} : s);
+  delete sectionInfo[name];
+  sectionNames.splice(idx, 1);
+  if (!sectionNames.length) sectionNames = ['Section 1'];
+
+  localStorage.setItem('att4_sections', JSON.stringify(sectionNames));
+  localStorage.setItem('att4_sectioninfo', JSON.stringify(sectionInfo));
+  localStorage.setItem('att4_archivedsections', JSON.stringify(archivedSections));
+  save();
+  buildSectionSelectors();
+  buildSectionNameInputs();
+  renderStudents(); renderRoster(); renderOverview();
+  toast('📦 "'+name+'" archived. Data kept — view it anytime under Archived Sections.');
+}
+
+function restoreSection(name) {
+  const entry = archivedSections.find(a => a.name === name);
+  if (!entry) return;
+  if (sectionNames.includes(name)) { toast('A section named "'+name+'" already exists — rename it first, or rename the archived one before restoring.'); return; }
+  if (!confirm(`Restore "${name}" to your active sections?`)) return;
+
+  sectionNames.push(name);
+  sectionInfo[name] = {schedule: entry.schedule, adviser: entry.adviser, adviserPhone: entry.adviserPhone, notifyAdviser: entry.notifyAdviser};
+  students = students.map(s => s.section === name ? {...s, archived: false} : s);
+  archivedSections = archivedSections.filter(a => a.name !== name);
+
+  localStorage.setItem('att4_sections', JSON.stringify(sectionNames));
+  localStorage.setItem('att4_sectioninfo', JSON.stringify(sectionInfo));
+  localStorage.setItem('att4_archivedsections', JSON.stringify(archivedSections));
+  save();
+  buildSectionSelectors();
+  buildSectionNameInputs();
+  renderStudents(); renderRoster(); renderOverview();
+  renderArchiveList();
+  toast('✔ "'+name+'" restored to active sections.');
+}
+
+function openArchiveModal() {
+  renderArchiveList();
+  document.getElementById('modal-archive').classList.add('open');
+}
+
+function renderArchiveList() {
+  const box = document.getElementById('archive-list');
+  if (!archivedSections.length) {
+    box.innerHTML = '<div class="empty">No archived sections yet.</div>';
+    return;
+  }
+  box.innerHTML = archivedSections.map(a => {
+    const rosterNames = students.filter(s => s.section===a.name && s.archived).map(s=>s.name);
+    return `<div style="border:1.5px solid var(--gray-border);border-radius:8px;padding:10px;margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-weight:700;">${a.name}</div>
+          <div style="font-size:11px;color:var(--text-muted);">${a.studentCount} student(s) · archived ${a.archivedDate}${a.adviser?' · adviser: '+a.adviser:''}</div>
+        </div>
+        <button class="btn btn-green" style="padding:6px 10px;font-size:12px;" onclick="restoreSection('${esc(a.name)}')">♻ Restore</button>
+      </div>
+      <details style="margin-top:8px;">
+        <summary style="font-size:12px;color:var(--blue);cursor:pointer;">View students (${rosterNames.length})</summary>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:6px;line-height:1.6;">${rosterNames.length ? rosterNames.join(', ') : 'No students recorded.'}</div>
+      </details>
+    </div>`;
+  }).join('');
 }
 
 function saveSectionNames() {
@@ -1517,13 +1630,14 @@ function resetAll() {
 function renderRoster() {
   const secF = document.getElementById('filter-section-roster').value;
   const q    = document.getElementById('search-roster').value.toLowerCase();
-  const filtered = students.filter(s =>
+  const activeStudents = students.filter(s => !s.archived);
+  const filtered = activeStudents.filter(s =>
     (!secF || s.section===secF) &&
     (s.name.toLowerCase().includes(q) || (s.parent||'').toLowerCase().includes(q))
   );
-  document.getElementById('roster-count').textContent = students.length;
+  document.getElementById('roster-count').textContent = activeStudents.length;
   const tbody = document.getElementById('roster-body');
-  if (!students.length) {
+  if (!activeStudents.length) {
     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px;">No students yet.</td></tr>';
     return;
   }
@@ -1676,7 +1790,7 @@ function downloadTemplate() {
 }
 
 function exportRosterCSV() {
-  const rows = students.map(s=>`"${s.name}","${s.parent}","${s.phone}","${s.section}","${s.gender||'male'}"`).join('\n');
+  const rows = students.filter(s=>!s.archived).map(s=>`"${s.name}","${s.parent}","${s.phone}","${s.section}","${s.gender||'male'}"`).join('\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob(['Student Name,Parent Name,Phone Number,Section,Gender\n'+rows],{type:'text/csv'}));
   a.download = 'class_roster.csv'; a.click();
