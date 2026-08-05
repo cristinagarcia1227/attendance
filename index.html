@@ -803,7 +803,7 @@ textarea{resize:vertical;min-height:70px;}
 // ══════════════════════════════════════
 // DEFAULT SECTION NAMES
 // ══════════════════════════════════════
-const APP_VERSION     = '1.4.0';
+const APP_VERSION     = '1.4.1';
 const UPDATE_CHECK_URL = 'https://cristinagarcia1227.github.io/attendance/version.json';
 const DEFAULT_SECTIONS = ['Section 1'];
 
@@ -1094,6 +1094,7 @@ function archiveSection(idx) {
   delete sectionInfo[name];
   sectionNames.splice(idx, 1);
   if (!sectionNames.length) sectionNames = ['Section 1'];
+  if (!sectionNames.includes(currentSection)) currentSection = '';
 
   localStorage.setItem('att4_sections', JSON.stringify(sectionNames));
   localStorage.setItem('att4_sectioninfo', JSON.stringify(sectionInfo));
@@ -1101,6 +1102,7 @@ function archiveSection(idx) {
   save();
   buildSectionSelectors();
   buildSectionNameInputs();
+  updateSectionPill();
   renderStudents(); renderRoster(); renderOverview();
   toast('📦 "'+name+'" archived. Data kept — view it anytime under Archived Sections.');
 }
@@ -1211,7 +1213,7 @@ function switchSection() {
 }
 
 function updateSectionPill() {
-  const count = students.filter(s => s.section === currentSection).length;
+  const count = students.filter(s => s.section === currentSection && !s.archived).length;
   document.getElementById('section-count-pill').textContent =
     currentSection ? count + ' students' : '—';
   const schedPill = document.getElementById('section-schedule-pill');
@@ -1352,7 +1354,7 @@ function switchTab(name) {
 // ATTENDANCE
 // ══════════════════════════════════════
 function sectionStudents() {
-  return students.filter(s => s.section === currentSection);
+  return students.filter(s => s.section === currentSection && !s.archived);
 }
 
 // ── LATE COUNTER (per student, per section, per month) ──
