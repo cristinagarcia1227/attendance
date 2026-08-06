@@ -487,7 +487,7 @@ textarea{resize:vertical;min-height:70px;}
     <div style="display:flex;gap:8px;flex-wrap:wrap;">
       <button class="btn btn-green" onclick="addNewSection()">＋ Add Section</button>
       <button class="btn btn-green" onclick="saveSectionNames()">💾 Save Sections</button>
-      <button class="btn btn-outline" onclick="openArchiveModal()">📦 View Archived Sections</button>
+      <button class="btn btn-outline" onclick="openArchiveModal()">📦 View Archive</button>
     </div>
   </div>
 
@@ -741,10 +741,10 @@ textarea{resize:vertical;min-height:70px;}
 <div class="modal-overlay" id="modal-archive" style="align-items:flex-start;overflow-y:auto;padding:20px 0;">
   <div class="modal" style="max-width:480px;width:92%;margin:auto;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-      <h3 style="font-size:15px;color:var(--text);">📦 Archived Sections</h3>
+      <h3 style="font-size:15px;color:var(--text);">📦 Archive</h3>
       <button class="btn btn-outline" style="padding:5px 10px;" onclick="closeModal('modal-archive')">✕</button>
     </div>
-    <p style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">Archived sections are hidden from active lists (Attendance, Roster filters, Add Student, etc.) but their students and attendance history are kept for reference. Restore anytime.</p>
+    <p style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">Archived sections and students are hidden from active lists (Attendance, Roster filters, Add Student, etc.) but their records are kept for reference. Restore anytime.</p>
     <div id="archive-list"></div>
   </div>
 </div>
@@ -803,7 +803,7 @@ textarea{resize:vertical;min-height:70px;}
 // ══════════════════════════════════════
 // DEFAULT SECTION NAMES
 // ══════════════════════════════════════
-const APP_VERSION     = '1.4.1';
+const APP_VERSION     = '1.5.0';
 const UPDATE_CHECK_URL = 'https://cristinagarcia1227.github.io/attendance/version.json';
 const DEFAULT_SECTIONS = ['Section 1'];
 
@@ -1075,7 +1075,7 @@ function removeSection(idx) {
 function archiveSection(idx) {
   const name = sectionNames[idx];
   const count = students.filter(s => s.section === name && !s.archived).length;
-  if (!confirm(`Archive "${name}"? It will be hidden from active lists (Attendance, Roster, Add Student, etc.), but ${count} student(s) and all attendance history will be kept — you can restore it anytime from "View Archived Sections".`)) return;
+  if (!confirm(`Archive "${name}"? It will be hidden from active lists (Attendance, Roster, Add Student, etc.), but ${count} student(s) and all attendance history will be kept — you can restore it anytime from "View Archive".`)) return;
 
   const info = sectionInfo[name] || {};
   // remove any existing archived entry with same name first (avoid dupes if re-archiving)
@@ -1136,26 +1136,49 @@ function openArchiveModal() {
 
 function renderArchiveList() {
   const box = document.getElementById('archive-list');
+  const archivedStudents = students
+    .map((s, idx) => ({s, idx}))
+    .filter(({s}) => s.archived && sectionNames.includes(s.section)); // individually archived; still-active section
+
+  let html = '';
+
+  html += '<div style="font-weight:700;margin-bottom:6px;">Archived Sections</div>';
   if (!archivedSections.length) {
-    box.innerHTML = '<div class="empty">No archived sections yet.</div>';
-    return;
-  }
-  box.innerHTML = archivedSections.map(a => {
-    const rosterNames = students.filter(s => s.section===a.name && s.archived).map(s=>s.name);
-    return `<div style="border:1.5px solid var(--gray-border);border-radius:8px;padding:10px;margin-bottom:10px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <div>
-          <div style="font-weight:700;">${a.name}</div>
-          <div style="font-size:11px;color:var(--text-muted);">${a.studentCount} student(s) · archived ${a.archivedDate}${a.adviser?' · adviser: '+a.adviser:''}</div>
+    html += '<div class="empty">No archived sections.</div>';
+  } else {
+    html += archivedSections.map(a => {
+      const rosterNames = students.filter(s => s.section===a.name && s.archived).map(s=>s.name);
+      return `<div style="border:1.5px solid var(--gray-border);border-radius:8px;padding:10px;margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-weight:700;">${a.name}</div>
+            <div style="font-size:11px;color:var(--text-muted);">${a.studentCount} student(s) · archived ${a.archivedDate}${a.adviser?' · adviser: '+a.adviser:''}</div>
+          </div>
+          <button class="btn btn-green" style="padding:6px 10px;font-size:12px;" onclick="restoreSection('${esc(a.name)}')">♻ Restore</button>
         </div>
-        <button class="btn btn-green" style="padding:6px 10px;font-size:12px;" onclick="restoreSection('${esc(a.name)}')">♻ Restore</button>
-      </div>
-      <details style="margin-top:8px;">
-        <summary style="font-size:12px;color:var(--blue);cursor:pointer;">View students (${rosterNames.length})</summary>
-        <div style="font-size:12px;color:var(--text-muted);margin-top:6px;line-height:1.6;">${rosterNames.length ? rosterNames.join(', ') : 'No students recorded.'}</div>
-      </details>
-    </div>`;
-  }).join('');
+        <details style="margin-top:8px;">
+          <summary style="font-size:12px;color:var(--blue);cursor:pointer;">View students (${rosterNames.length})</summary>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:6px;line-height:1.6;">${rosterNames.length ? rosterNames.join(', ') : 'No students recorded.'}</div>
+        </details>
+      </div>`;
+    }).join('');
+  }
+
+  html += '<div style="font-weight:700;margin:16px 0 6px;">Archived Students</div>';
+  if (!archivedStudents.length) {
+    html += '<div class="empty">No individually archived students.</div>';
+  } else {
+    html += archivedStudents.map(({s, idx}) => `
+      <div style="border:1.5px solid var(--gray-border);border-radius:8px;padding:10px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-weight:700;">${s.name}</div>
+          <div style="font-size:11px;color:var(--text-muted);">${s.section} · ${s.archivedReason||'Archived'} · ${s.archivedDate||''}</div>
+        </div>
+        <button class="btn btn-green" style="padding:6px 10px;font-size:12px;" onclick="restoreStudent(${idx})">♻ Restore</button>
+      </div>`).join('');
+  }
+
+  box.innerHTML = html;
 }
 
 function saveSectionNames() {
@@ -1653,7 +1676,8 @@ function renderRoster() {
       <td style="font-family:monospace;font-size:11px;">${s.phone||'—'}</td>
       <td><div style="display:flex;gap:5px;">
         <button class="btn btn-outline" style="padding:4px 8px;font-size:11px;" onclick="openEdit(${idx})">✏️</button>
-        <button class="btn btn-red" style="padding:4px 8px;font-size:11px;" onclick="deleteStudent(${idx})">🗑</button>
+        <button class="btn btn-outline" style="padding:4px 8px;font-size:11px;" onclick="archiveStudent(${idx})" title="Archive (keep records, hide from active lists)">📦</button>
+        <button class="btn btn-red" style="padding:4px 8px;font-size:11px;" onclick="deleteStudent(${idx})" title="Permanently delete">🗑</button>
       </div></td>
     </tr>`;
   }).join('');
@@ -1714,6 +1738,23 @@ function saveEdit() {
   students[idx] = {name,parent,phone,gender,section,enrollStatus,enrollDate};
   save(); closeModal('modal-edit'); renderRoster(); renderStudents(); updateSectionPill();
   toast('Updated: '+name);
+}
+
+function archiveStudent(idx) {
+  const s = students[idx];
+  const reason = prompt('Reason for archiving '+s.name+'? (e.g. Transferred out, Dropped)', 'Transferred out');
+  if (reason === null) return; // cancelled
+  students[idx] = {...s, archived: true, archivedReason: reason.trim() || 'Archived', archivedDate: getDate()};
+  save(); renderRoster(); renderStudents(); updateSectionPill(); renderOverview();
+  toast('📦 Archived: '+s.name+'. Records kept for reference.');
+}
+
+function restoreStudent(idx) {
+  const s = students[idx];
+  if (!confirm('Restore '+s.name+' to the active roster?')) return;
+  students[idx] = {...s, archived: false};
+  save(); renderRoster(); renderStudents(); updateSectionPill(); renderOverview(); renderArchiveList();
+  toast('✔ Restored: '+s.name);
 }
 
 function deleteStudent(idx) {
