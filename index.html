@@ -500,6 +500,11 @@ textarea{resize:vertical;min-height:70px;}
       <button class="btn btn-outline" onclick="document.getElementById('import-backup-file').click()">⬆ Import Backup</button>
     </div>
     <input type="file" id="import-backup-file" accept=".json" style="display:none;" onchange="importBackup(event)"/>
+    <div class="btn-row" style="margin-top:8px;">
+      <button class="btn btn-outline" onclick="restoreUndoSnapshot()">↩ Restore Last Undo Snapshot</button>
+      <button class="btn btn-outline" onclick="restorePreUpdateBackup()">🛟 Restore Pre-Update Backup</button>
+    </div>
+    <p style="font-size:11px;color:var(--purple);margin-top:6px;">These use safety copies already saved automatically in this browser — "Undo Snapshot" is saved right before a bulk delete/archive action; "Pre-Update Backup" is saved right before installing an app update. If nothing was saved yet, these will say so.</p>
     <p style="font-size:11px;color:var(--purple);margin-top:8px;line-height:1.6;">
       <strong>How to sync phone ↔ laptop:</strong><br>
       1. On Device A → Export Full Backup → send file via Viber/email to Device B<br>
@@ -804,7 +809,7 @@ textarea{resize:vertical;min-height:70px;}
 // ══════════════════════════════════════
 // DEFAULT SECTION NAMES
 // ══════════════════════════════════════
-const APP_VERSION     = '1.5.1';
+const APP_VERSION     = '1.6.0';
 const UPDATE_CHECK_URL = 'https://cristinagarcia1227.github.io/attendance/version.json';
 const DEFAULT_SECTIONS = ['Section 1'];
 
@@ -1077,6 +1082,7 @@ function archiveSection(idx) {
   const name = sectionNames[idx];
   const count = students.filter(s => s.section === name && !s.archived).length;
   if (!confirm(`Archive "${name}"? It will be hidden from active lists (Attendance, Roster, Add Student, etc.), but ${count} student(s) and all attendance history will be kept — you can restore it anytime from "View Archive".`)) return;
+  saveUndoSnapshot();
 
   const info = sectionInfo[name] || {};
   // remove any existing archived entry with same name first (avoid dupes if re-archiving)
@@ -1768,10 +1774,12 @@ function deleteStudent(idx) {
 }
 
 function clearRoster() {
-  if (!confirm('Clear ALL students from ALL sections? This cannot be undone.')) return;
+  const typed = prompt('This deletes ALL students from ALL sections (attendance history stays, but rosters and contact info are wiped). Type DELETE ALL to confirm:');
+  if (typed !== 'DELETE ALL') { if (typed !== null) toast('Cancelled — text did not match.'); return; }
+  saveUndoSnapshot();
   students=[]; attendance={};
   save(); renderRoster(); renderStudents(); updateSectionPill();
-  toast('Roster cleared.');
+  toast('Roster cleared. You can undo this from Setup → Restore Last Undo Snapshot if needed.');
 }
 
 function clearSectionRoster() {
@@ -1779,11 +1787,12 @@ function clearSectionRoster() {
   if (!secF) { toast('Select a specific section in the filter dropdown first.'); return; }
   const count = students.filter(s => s.section === secF).length;
   if (!count) { toast('No students in '+secF+'.'); return; }
-  if (!confirm(`Delete all ${count} student(s) in "${secF}"? This cannot be undone. Use this to clean up a bad import (e.g. an Excel file uploaded by mistake).`)) return;
+  if (!confirm(`Delete all ${count} student(s) in "${secF}"? A safety snapshot will be saved so you can undo this from Setup → Restore Last Undo Snapshot if something goes wrong.`)) return;
+  saveUndoSnapshot();
   students = students.filter(s => s.section !== secF);
   Object.keys(attendance).forEach(k => { if (k.startsWith(secF+'|')) delete attendance[k]; });
   save(); renderRoster(); renderStudents(); updateSectionPill();
-  toast(count+' student(s) removed from '+secF+'.');
+  toast(count+' student(s) removed from '+secF+'. Undo available in Setup if needed.');
 }
 
 // ══════════════════════════════════════
@@ -2675,6 +2684,59 @@ function sendEmergencyPrepaid() {
     },2000);
   }
   sendNext();
+}
+
+function checkAutoBackupAvailable() {
+  return !!localStorage.getItem('att4_pre_update_backup') || !!localStorage.getItem('att4_undo_snapshot');
+}
+
+function restoreFromStoredBackup(key, label) {
+  const raw = localStorage.getItem(key);
+  if (!raw) { alert('No '+label+' found in this browser.'); return; }
+  let backup;
+  try { backup = JSON.parse(raw); } catch(e) { alert('That backup is corrupted and cannot be read.'); return; }
+  if (!backup.students) { alert('That backup looks invalid.'); return; }
+  const when = backup.savedAt || backup.exported;
+  const ok = confirm(
+    'Restore ' + label + (when ? ' from ' + new Date(when).toLocaleString('en-PH') : '') + '?\n\n' +
+    '• ' + backup.students.length + ' students\n' +
+    '• ' + Object.keys(backup.attendance||{}).length + ' attendance records\n' +
+    '• ' + (backup.log||[]).length + ' log entries\n' +
+    '• ' + (backup.sectionNames||[]).length + ' sections\n\n' +
+    'This will REPLACE your current data with this backup. Continue?'
+  );
+  if (!ok) return;
+  students     = backup.students     || [];
+  attendance   = backup.attendance   || {};
+  settings     = backup.settings     || settings;
+  log          = backup.log          || [];
+  sectionNames = backup.sectionNames || sectionNames;
+  sectionInfo  = backup.sectionInfo  || sectionInfo;
+  if (backup.msgTemplate)    localStorage.setItem('att4_msg_template',     backup.msgTemplate);
+  if (backup.msgTemplateAdv) localStorage.setItem('att4_msg_template_adv', backup.msgTemplateAdv);
+  save();
+  localStorage.setItem('att4_sections', JSON.stringify(sectionNames));
+  localStorage.setItem('att4_sectioninfo', JSON.stringify(sectionInfo));
+  localStorage.setItem('att4_settings', JSON.stringify(settings));
+  buildSectionSelectors(); buildSectionNameInputs();
+  renderStudents(); renderRoster(); renderOverview();
+  loadTemplates();
+  toast('✔ Restored from '+label+'.');
+}
+
+function restorePreUpdateBackup() { restoreFromStoredBackup('att4_pre_update_backup', 'the backup saved before your last update'); }
+function restoreUndoSnapshot()    { restoreFromStoredBackup('att4_undo_snapshot',      'the safety snapshot from your last bulk action'); }
+
+// Saves a rolling safety snapshot before any destructive bulk action (clear section,
+// clear all, archive section). Lets restoreUndoSnapshot() undo an accidental tap.
+function saveUndoSnapshot() {
+  try {
+    const snap = {
+      version:1, savedAt:new Date().toISOString(),
+      students, attendance, settings, log, sectionNames, sectionInfo
+    };
+    localStorage.setItem('att4_undo_snapshot', JSON.stringify(snap));
+  } catch(e) {}
 }
 
 function exportBackup() {
