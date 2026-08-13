@@ -503,6 +503,7 @@ textarea{resize:vertical;min-height:70px;}
     <div class="btn-row" style="margin-top:8px;">
       <button class="btn btn-outline" onclick="restoreUndoSnapshot()">↩ Restore Last Undo Snapshot</button>
       <button class="btn btn-outline" onclick="restorePreUpdateBackup()">🛟 Restore Pre-Update Backup</button>
+      <button class="btn btn-outline" onclick="restorePreRestoreSnapshot()">⏪ Restore My Data From Before Last Restore</button>
     </div>
     <p style="font-size:11px;color:var(--purple);margin-top:6px;">These use safety copies already saved automatically in this browser — "Undo Snapshot" is saved right before a bulk delete/archive action; "Pre-Update Backup" is saved right before installing an app update. If nothing was saved yet, these will say so.</p>
     <p style="font-size:11px;color:var(--purple);margin-top:8px;line-height:1.6;">
@@ -809,7 +810,7 @@ textarea{resize:vertical;min-height:70px;}
 // ══════════════════════════════════════
 // DEFAULT SECTION NAMES
 // ══════════════════════════════════════
-const APP_VERSION     = '1.6.0';
+const APP_VERSION     = '1.6.1';
 const UPDATE_CHECK_URL = 'https://cristinagarcia1227.github.io/attendance/version.json';
 const DEFAULT_SECTIONS = ['Section 1'];
 
@@ -852,6 +853,7 @@ function init() {
   initWelcome();
   // Check for updates silently after 3 seconds
   setTimeout(() => checkForUpdates(false), 3000);
+  checkBackupReminder();
 }
 
 function loadStorage() {
@@ -2690,6 +2692,17 @@ function checkAutoBackupAvailable() {
   return !!localStorage.getItem('att4_pre_update_backup') || !!localStorage.getItem('att4_undo_snapshot');
 }
 
+function mostRecentLogDate(logArr) {
+  if (!logArr || !logArr.length) return null;
+  // dates are stored as locale strings (en-PH, e.g. "8/13/2026") so compare via Date parse
+  let latest = null;
+  logArr.forEach(r => {
+    const d = new Date(r.date);
+    if (!isNaN(d) && (!latest || d > latest)) latest = d;
+  });
+  return latest;
+}
+
 function restoreFromStoredBackup(key, label) {
   const raw = localStorage.getItem(key);
   if (!raw) { alert('No '+label+' found in this browser.'); return; }
@@ -2697,15 +2710,38 @@ function restoreFromStoredBackup(key, label) {
   try { backup = JSON.parse(raw); } catch(e) { alert('That backup is corrupted and cannot be read.'); return; }
   if (!backup.students) { alert('That backup looks invalid.'); return; }
   const when = backup.savedAt || backup.exported;
+
+  const curLatest = mostRecentLogDate(log);
+  const bakLatest = mostRecentLogDate(backup.log);
+  let warning = '';
+  if (curLatest && (!bakLatest || curLatest > bakLatest)) {
+    warning = '\n⚠ WARNING: Your CURRENT data has newer attendance records (up to ' + curLatest.toLocaleDateString('en-PH') +
+      ') than this backup (' + (bakLatest ? 'up to '+bakLatest.toLocaleDateString('en-PH') : 'none') + ').\n' +
+      'Restoring will DELETE those newer records. A safety copy of your current data will be saved first, ' +
+      'recoverable via "Restore My Data From Before Last Restore" — but it\'s much safer to tap Cancel now and use Export Full Backup first.\n';
+  }
+
   const ok = confirm(
     'Restore ' + label + (when ? ' from ' + new Date(when).toLocaleString('en-PH') : '') + '?\n\n' +
+    'Backup contains:\n' +
     '• ' + backup.students.length + ' students\n' +
     '• ' + Object.keys(backup.attendance||{}).length + ' attendance records\n' +
-    '• ' + (backup.log||[]).length + ' log entries\n' +
+    '• ' + (backup.log||[]).length + ' log entries' + (bakLatest ? ' (latest: '+bakLatest.toLocaleDateString('en-PH')+')' : '') + '\n' +
     '• ' + (backup.sectionNames||[]).length + ' sections\n\n' +
-    'This will REPLACE your current data with this backup. Continue?'
+    'Your CURRENT data has:\n' +
+    '• ' + students.length + ' students\n' +
+    '• ' + log.length + ' log entries' + (curLatest ? ' (latest: '+curLatest.toLocaleDateString('en-PH')+')' : '') + '\n' +
+    warning + '\n' +
+    'This will REPLACE your current data with the backup. Continue?'
   );
   if (!ok) return;
+
+  // Safety net: snapshot current (about-to-be-overwritten) data before restoring
+  try {
+    const preRestore = {version:1, savedAt:new Date().toISOString(), students, attendance, settings, log, sectionNames, sectionInfo};
+    localStorage.setItem('att4_pre_restore_snapshot', JSON.stringify(preRestore));
+  } catch(e) {}
+
   students     = backup.students     || [];
   attendance   = backup.attendance   || {};
   settings     = backup.settings     || settings;
@@ -2721,8 +2757,10 @@ function restoreFromStoredBackup(key, label) {
   buildSectionSelectors(); buildSectionNameInputs();
   renderStudents(); renderRoster(); renderOverview();
   loadTemplates();
-  toast('✔ Restored from '+label+'.');
+  toast('✔ Restored from '+label+'. Your prior data was saved — use "Restore My Data From Before Last Restore" to undo this.');
 }
+
+function restorePreRestoreSnapshot() { restoreFromStoredBackup('att4_pre_restore_snapshot', 'your data from before your last restore'); }
 
 function restorePreUpdateBackup() { restoreFromStoredBackup('att4_pre_update_backup', 'the backup saved before your last update'); }
 function restoreUndoSnapshot()    { restoreFromStoredBackup('att4_undo_snapshot',      'the safety snapshot from your last bulk action'); }
@@ -2753,7 +2791,16 @@ function exportBackup() {
   a.href = URL.createObjectURL(new Blob([JSON.stringify(backup, null, 2)], {type:'application/json'}));
   a.download = 'attendance_backup_' + new Date().toLocaleDateString('en-PH').replace(/\//g,'-') + '.json';
   a.click();
+  localStorage.setItem('att4_last_export', new Date().toISOString());
   toast('Backup exported! Send this file to your other device.');
+}
+
+function checkBackupReminder() {
+  const last = localStorage.getItem('att4_last_export');
+  const days = last ? (Date.now() - new Date(last).getTime()) / 86400000 : Infinity;
+  if (days >= 7 && log.length > 0) {
+    setTimeout(() => toast('💾 It\'s been a while since your last backup export — tap Setup → Export Full Backup to keep your data safe.'), 2500);
+  }
 }
 
 function importBackup(e) {
