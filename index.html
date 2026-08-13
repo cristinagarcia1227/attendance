@@ -265,6 +265,7 @@ textarea{resize:vertical;min-height:70px;}
       <div class="card-title" style="margin-bottom:0;">Student roster <span class="num-badge" id="roster-count">0</span></div>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-blue" onclick="exportRosterCSV()">⬇ Export</button>
+        <button class="btn btn-red" onclick="clearSectionRoster()">🗑 Clear Selected Section</button>
         <button class="btn btn-red" onclick="clearRoster()">🗑 Clear All</button>
       </div>
     </div>
@@ -803,7 +804,7 @@ textarea{resize:vertical;min-height:70px;}
 // ══════════════════════════════════════
 // DEFAULT SECTION NAMES
 // ══════════════════════════════════════
-const APP_VERSION     = '1.5.0';
+const APP_VERSION     = '1.5.1';
 const UPDATE_CHECK_URL = 'https://cristinagarcia1227.github.io/attendance/version.json';
 const DEFAULT_SECTIONS = ['Section 1'];
 
@@ -1773,6 +1774,18 @@ function clearRoster() {
   toast('Roster cleared.');
 }
 
+function clearSectionRoster() {
+  const secF = document.getElementById('filter-section-roster').value;
+  if (!secF) { toast('Select a specific section in the filter dropdown first.'); return; }
+  const count = students.filter(s => s.section === secF).length;
+  if (!count) { toast('No students in '+secF+'.'); return; }
+  if (!confirm(`Delete all ${count} student(s) in "${secF}"? This cannot be undone. Use this to clean up a bad import (e.g. an Excel file uploaded by mistake).`)) return;
+  students = students.filter(s => s.section !== secF);
+  Object.keys(attendance).forEach(k => { if (k.startsWith(secF+'|')) delete attendance[k]; });
+  save(); renderRoster(); renderStudents(); updateSectionPill();
+  toast(count+' student(s) removed from '+secF+'.');
+}
+
 // ══════════════════════════════════════
 // CSV UPLOAD / EXPORT
 // ══════════════════════════════════════
@@ -1799,10 +1812,24 @@ function parseCSVLine(line) {
 
 function uploadCSV(e) {
   const file = e.target.files[0]; if (!file) return;
+  const nameLower = file.name.toLowerCase();
+  if (!nameLower.endsWith('.csv') && !nameLower.endsWith('.txt')) {
+    alert('That doesn\'t look like a CSV or TXT file. If it\'s an Excel file, open it in Excel/Google Sheets first and use "Save As / Export → CSV", then upload the .csv file.');
+    e.target.value=''; return;
+  }
   const reader = new FileReader();
   reader.onload = function(ev) {
+    const text = ev.target.result;
+    // Detect binary/non-text content (e.g. an .xlsx file renamed to .csv, or wrong file picked).
+    // .xlsx/.docx/.zip files start with the ZIP signature "PK", and binary files generally
+    // contain control characters that never appear in a real CSV.
+    const looksBinary = text.startsWith('PK') || /[\x00-\x08\x0E-\x1F]/.test(text.slice(0, 2000));
+    if (looksBinary) {
+      alert('This file appears to be an Excel or other non-text file, not a plain CSV. Please open it in Excel/Google Sheets and use "Save As / Export → CSV (Comma delimited)", then upload that .csv file instead.');
+      e.target.value=''; return;
+    }
     // Split into lines, but respect quoted newlines (rare) — simple line split is fine for typical exports
-    const rawLines = ev.target.result.split(/\r?\n/).filter(l => l.trim() !== '');
+    const rawLines = text.split(/\r?\n/).filter(l => l.trim() !== '');
     let added=0, skipped=0, errors=0;
     rawLines.forEach((line,i) => {
       const cols = parseCSVLine(line);
